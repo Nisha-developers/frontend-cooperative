@@ -6,7 +6,7 @@ import Navbar from '../layout/Navbar';
 
 const HeroSection = () => {
   return (
-    <div className='relative h-screen px-4 sm:px-6 lg:px-1 overflow-hidden'>
+    <div className='relative min-h-screen px-4 sm:px-6 lg:px-1 overflow-hidden flex items-center flex-col'>
 
       {/* Background Image */}
       <div
@@ -57,7 +57,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full z-[10]">
+      <div className="w-full ">
         <MarqueeTicker />
       </div>
 
