@@ -23,7 +23,7 @@ const HeroSection = () => {
       />
 
       {/* Content sits above overlays */}
-      <div className="relative z-[1000000000]">
+      <div className="relative z-[100000]">
         <Navbar />
 
         {/* Hero Container */}
@@ -57,7 +57,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      <div className="relative z-10">
+      <div className="absolute bottom-0 left-0 w-full z-[10]">
         <MarqueeTicker />
       </div>
 
