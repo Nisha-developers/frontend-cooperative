@@ -4,7 +4,7 @@ import { AnimateOnScroll, StaggerWrapper, StaggerItem, fadeLeft, fadeRight, fade
 
 const stats = [
   { value: "35+", label: "Years of Service" },
-  { value: "500+", label: "Members Served" },
+  { value: "50+", label: "Members Served" },
   { value: "OGCS 5426", label: "Registered Cooperative" },
 ]
 

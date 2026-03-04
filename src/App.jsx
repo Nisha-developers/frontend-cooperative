@@ -30,6 +30,7 @@ import ManageUsersPage from '@/pages/admin/ManageUsersPage'
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
+import CodeSend from './pages/auth/CodeSend'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+           <Route path="/code-send" element={<CodeSend />} />
 
           {/* User (protected) */}
           <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />

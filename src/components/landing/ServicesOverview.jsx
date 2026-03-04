@@ -28,10 +28,15 @@ const services = [
         <circle cx="24" cy="16" r="3" />
       </svg>
     ),
-    title: "Property Purchase",
+    title: "Housing Cooperative",
     tagline: "Own Your Tomorrow",
-    description: "Acquire land or completed homes within Bethel Garden Estate. Our cooperative purchase workflow walks you through every document, payment stage, and ownership transfer.",
-    steps: ["Select Property Listing", "Complete Purchase Form", "Submit Payment Evidence", "Admin Sale Verification"],
+    description: "Become a member of our housing cooperative and secure your dream home. Members can save progressively and pay in flexible installments to acquire houses within our cooperative estates. Our process guides you through saving, application, payment, and ownership transfer.",
+    steps: [
+  "Join the Cooperative & Start Saving",
+  "Select Your House",
+  "Pay in Flexible Installments",
+  "Cooperative Verification & Ownership Transfer"
+],
     cta: "View Properties",
   },
   {
@@ -131,7 +136,7 @@ function ServiceCard({ service, isActive, onToggle }) {
     <div
       onClick={onToggle}
       style={{ backgroundColor: isActive ? "#FFECD1" : "#2E7D32" }}
-      className="relative cursor-pointer px-8 py-8 overflow-hidden border border-white/5 transition-colors duration-300 h-full"
+      className="relative cursor-pointer px-8 py-8 overflow-hidden border border-white/5 transition-colors duration-300 h-full rounded-3xl"
     >
       <span className="absolute top-3 right-5 text-[5rem] font-black leading-none select-none pointer-events-none text-white/5">
         {service.id}

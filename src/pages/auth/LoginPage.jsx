@@ -6,10 +6,39 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login:", form);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(
+      "http://localhost:8000/api/login/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.identifier,
+          password: form.password,
+        }),
+      }
+    );
+    const data = await response.json();
+    console.log(data)
+    console.log(Object.keys(data).length)
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+    // Save token if backend returns one
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+};
 
   return (
     <div className="min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12">

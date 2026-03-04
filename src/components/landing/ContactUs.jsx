@@ -49,7 +49,7 @@ export default function ContactUs() {
 
                 {/* Address */}
                 <StaggerItem variant={fadeUp} duration={0.5}>
-                  <div className="bg-cooperative-dark p-6 border border-white/5">
+                  <div className="bg-cooperative-dark p-6 border border-white/5 rounded-2xl">
                     <div className="text-cooperative-orange mb-3">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
@@ -65,7 +65,7 @@ export default function ContactUs() {
 
                 {/* Phone */}
                 <StaggerItem variant={fadeUp} duration={0.5}>
-                  <div className="bg-cooperative-dark p-6 border border-white/5">
+                  <div className="bg-cooperative-dark p-6 border border-white/5 rounded-2xl">
                     <div className="text-cooperative-orange mb-3">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
                         <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .27h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.1a16 16 0 006.29 6.29l1.2-1.2a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
@@ -83,14 +83,14 @@ export default function ContactUs() {
 
                 {/* WhatsApp */}
                 <StaggerItem variant={fadeUp} duration={0.5}>
-                  <div className="bg-cooperative-dark p-6 border border-white/5">
+                  <div className="bg-cooperative-dark p-6 border border-white/5 rounded-2xl">
                     <div className="text-cooperative-orange mb-3">
                       <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
                         <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.842L.057 23.428a.5.5 0 00.609.61l5.647-1.444A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.933 9.933 0 01-5.068-1.383l-.362-.214-3.753.959.984-3.67-.235-.376A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
                       </svg>
                     </div>
-                    <p className="text-cooperative-orange text-[0.65rem] uppercase tracking-[0.15rem] mb-1">WhatsApp</p>
+                    <p className="text-cooperative-orange text-[0.65rem] uppercase tracking-[0.15rem] mb-1 ">WhatsApp</p>
                     <a
                       href="https://wa.me/447533990688"
                       target="_blank"
@@ -104,7 +104,7 @@ export default function ContactUs() {
 
                 {/* Registration */}
                 <StaggerItem variant={fadeUp} duration={0.5}>
-                  <div className="bg-cooperative-dark p-6 border border-white/5">
+                  <div className="bg-cooperative-dark p-6 border border-white/5 rounded-2xl">
                     <div className="text-cooperative-orange mb-3">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
                         <rect x="2" y="7" width="20" height="14" rx="2" />
@@ -124,7 +124,7 @@ export default function ContactUs() {
 
               {/* Social Media */}
               <AnimateOnScroll variant={fadeUp} delay={0.2}>
-                <div className="bg-cooperative-dark border border-white/5 px-6 py-5">
+                <div className="bg-cooperative-dark border border-white/5 px-6 py-5 rounded-2xl">
                   <p className="text-cooperative-orange text-[0.65rem] uppercase tracking-[0.2rem] mb-4">Follow & Connect</p>
                   <StaggerWrapper className="flex items-center gap-3 flex-wrap" stagger={0.08} delay={0.05}>
 
@@ -174,7 +174,7 @@ export default function ContactUs() {
 
               {/* Map */}
               <AnimateOnScroll variant={scaleIn} delay={0.25}>
-                <div className="border border-white/5 overflow-hidden" style={{ height: "280px" }}>
+                <div className="border border-white/5 overflow-hidden rounded-2xl" style={{ height: "280px" }}>
                   <iframe
                     title="Bethel Garden Estate Location"
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.5!2d3.2835!3d7.0926!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103a5165ad8d5f8d%3A0x96b64f7dc8bc0b44!2sObada-Oko%2C%20Abeokuta%2C%20Ogun%20State!5e0!3m2!1sen!2sng!4v1708000000000!5m2!1sen!2sng"
@@ -193,7 +193,7 @@ export default function ContactUs() {
 
           {/* RIGHT — Form slides in from right */}
           <AnimateOnScroll variant={fadeRight} delay={0.2} duration={0.7}>
-            <div className="bg-cooperative-dark border border-white/5 px-8 py-10 flex flex-col justify-between">
+            <div className="bg-cooperative-dark border border-white/5 px-8 py-10 flex flex-col justify-between rounded-2xl">
 
               <div>
                 <p className="text-cooperative-orange text-[0.65rem] uppercase tracking-[0.2rem] mb-2">Send a Message</p>
@@ -215,7 +215,7 @@ export default function ContactUs() {
                       <input
                         type="text"
                         placeholder="e.g. Emeka"
-                        className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200"
+                        className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -223,7 +223,7 @@ export default function ContactUs() {
                       <input
                         type="text"
                         placeholder="e.g. Adeyemi"
-                        className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200"
+                        className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
                       />
                     </div>
                   </div>
@@ -231,11 +231,11 @@ export default function ContactUs() {
 
                 <StaggerItem variant={fadeUp} duration={0.45}>
                   <div className="flex flex-col gap-1">
-                    <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Email Address</label>
+                    <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem] ">Email Address</label>
                     <input
                       type="email"
                       placeholder="you@example.com"
-                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200"
+                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
                     />
                   </div>
                 </StaggerItem>
@@ -246,7 +246,7 @@ export default function ContactUs() {
                     <input
                       type="tel"
                       placeholder="+234 800 000 0000"
-                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200"
+                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
                     />
                   </div>
                 </StaggerItem>
@@ -254,7 +254,7 @@ export default function ContactUs() {
                 <StaggerItem variant={fadeUp} duration={0.45}>
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Subject</label>
-                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none">
+                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none rounded-lg">
                       <option value="" className="bg-cooperative-dark">Select a subject</option>
                       <option value="housing" className="bg-cooperative-dark">Housing Inquiry</option>
                       <option value="purchase" className="bg-cooperative-dark">Property Purchase</option>
@@ -272,7 +272,7 @@ export default function ContactUs() {
                     <textarea
                       rows={5}
                       placeholder="Tell us how we can help you..."
-                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 resize-none"
+                      className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 resize-none rounded-lg"
                     />
                   </div>
                 </StaggerItem>
@@ -280,7 +280,7 @@ export default function ContactUs() {
                 <StaggerItem variant={scaleIn} duration={0.45}>
                   <button
                     type="submit"
-                    className="bg-cooperative-orange text-cooperative-dark font-black uppercase tracking-widest text-sm px-8 py-4 hover:bg-cooperative-cream transition-colors duration-200 mt-1 w-full"
+                    className="bg-cooperative-orange text-cooperative-dark font-black uppercase tracking-widest text-sm px-8 py-4 hover:bg-cooperative-cream transition-colors duration-200 mt-1 w-full rounded-2xl"
                   >
                     Send Message →
                   </button>

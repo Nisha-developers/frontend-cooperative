@@ -5,6 +5,7 @@ import MarqueeTicker from './MarqueeTicker';
 import Navbar from '../layout/Navbar';
 
 const HeroSection = () => {
+ 
   return (
     <div className='relative min-h-screen px-4 sm:px-6 lg:px-1 overflow-hidden flex items-center flex-col'>
 
@@ -39,7 +40,7 @@ const HeroSection = () => {
             </h1>
             <p className='text-cooperative-cream'>
               Affordable apartments and houses, flexible payment plans, and transparent cooperative
-              benefits all in one trusted platform. Join thousands of members building their future together.
+              benefits all in one trusted platform. Join thousands of members building their future.
             </p>
             <div className='mt-8 custom-1000:flex custom-1000:gap-6 custom-1000:justify-center'>
               <button className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem] bg-cooperative-cream py-3 mb-2 rounded-lg'>

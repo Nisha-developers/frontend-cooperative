@@ -1,11 +1,15 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaCheck } from "react-icons/fa6";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
-    fullName: "",
+    full_name: "",
     username: "",
     email: "",
+    is_admin: false,
     gender: "",
     password: "",
     confirmPassword: "",
@@ -13,6 +17,10 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [usernameError, setUserNameErr] = useState(false);
+  const [blur, setblur] = useState(false);
+
 
   const passwordStrength = (pwd) => {
     if (!pwd) return { level: 0, label: "", color: "" };
@@ -32,28 +40,94 @@ export default function Signup() {
   };
 
   const strength = passwordStrength(form.password);
+// Function  to handle submit begins
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
+    else if (form.gender === ''){
+alert('Full in all the required field before you continue')
+    }
+
     console.log("Signup:", form);
+    // Prepare the data for backend
+    const userData = {
+      full_name: form.full_name,
+      username: form.username,
+      email: form.email,
+      gender: form.gender,
+      is_admin: form.is_admin, 
+    };
+     const userDatas = {
+      full_name: form.full_name,
+      username: form.username,
+      email: form.email,
+      gender: form.gender,
+      is_admin: form.is_admin, 
+      password: form.confirmPassword
+    };
+   
+  
+    try{
+ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/register/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userDatas),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        console.error("Backend error:", err);
+         setUserNameErr(err.username ? true : false);
+         setEmailError(err.email ? true : false);
+      window.scrollTo({ top: 80, left: 0, behavior: "smooth" });
+        return;
+      }
+
+      const data = await response.json();
+      console.log("User registered successfully:", data);
+       sessionStorage.setItem('userdata', JSON.stringify(userData));
+        setblur(true);
+         window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+       } 
+    
+       catch (error) {
+      console.error("Network error:", error);
+      alert("An error occurred while registering the user.");
+          }
+  
   };
+   useEffect(() => {
+    if (blur) {
+      const timer = setTimeout(() => {
+       navigate("/code-send", {
+        state: { email: form.email }
+       });
+      }, 6000);
+
+      return () => clearTimeout(timer); // cleanup in case component unmounts
+    }
+  }, [blur, navigate]);
+
+  // Function to handle submit begins.
 
   const fields = [
-    { id: "fullName", label: "Full Name", type: "text", placeholder: "Jane Smith", icon: (
+    { id: "full_name", label: "Full Name", type: "text", placeholder: "Jane Smith", icon: (
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     )},
-    { id: "username", label: "Username", type: "text", placeholder: "janesmith", icon: (
+    { id: "username", label: "Username", type: "text", placeholder: "janesmith", message: 'The user name is already in existence', icon: (
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
       </svg>
     )},
-    { id: "email", label: "Email Address", type: "email", placeholder: "jane@example.com", icon: (
+    { id: "email", label: "Email Address", type: "email", placeholder: "jane@example.com", message: 'The email address is already taken', icon: (
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
@@ -61,8 +135,9 @@ export default function Signup() {
   ];
 
   return (
-    <div className="min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12">
+    <div className={`min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12 ${blur ? 'h-[100vh]' : ''}`}>
       {/* Background */}
+      <div className={`${blur ? 'blur-[20px]' : ''}`}>
       <div
         className="fixed inset-0 opacity-30 pointer-events-none"
         style={{
@@ -97,7 +172,7 @@ export default function Signup() {
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Standard fields */}
-            {fields.map(({ id, label, type, placeholder, icon }) => (
+            {fields.map(({ id, label, type, placeholder, message, icon }, index) => (
               <div key={id}>
                 <label
                   htmlFor={id}
@@ -125,6 +200,8 @@ export default function Signup() {
                     required
                   />
                 </div>
+                  {index === 2 &&emailError && <p className="text-red-600 font-bold">{message}</p>}
+                    {index === 1 && usernameError && <p className="text-red-600 font-bold">{message}</p>}
               </div>
             ))}
 
@@ -145,12 +222,6 @@ export default function Signup() {
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <circle cx="12" cy="9" r="5" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v6m-3-3h6" />
-                    </svg>
-                  )},
-                  { value: "other", label: "Other", icon: (
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <circle cx="12" cy="12" r="4" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2M2 12h2m16 0h2" />
                     </svg>
                   )},
                 ].map(({ value, label, icon }) => (
@@ -340,6 +411,17 @@ export default function Signup() {
           </Link>
         </p>
       </div>
+      </div>
+      { createPortal(<div>
+        <div className={`w-[25%] z-[10000] bg-white absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] p-5 font-bold border-[1px] border-cooperative-dark rounded-md shadow-2xl shadow-cooperative-dark ${blur ? 'block': 'hidden'}`}> 
+          <div className="flex justify-center pb-3">
+          <FaCheck />
+          </div>
+         Sign up successful. Check your email to continue with the registration.
+        </div>
+      </div>, document.body)}
     </div>
+   
   );
+
 }
