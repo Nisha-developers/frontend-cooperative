@@ -126,7 +126,7 @@ export default function Footer() {
             </p>
             <h2 className="text-cooperative-cream font-extrabold text-xl leading-tight">
               Bethel<br />
-              <span className="text-cooperative-orange">Cooperative</span>
+              <span className="text-cooperative-orange">Cooperatives</span>
             </h2>
             <p className="text-cooperative-cream/30 text-[0.65rem] uppercase tracking-widest mt-1">
               Housing Society Limited
