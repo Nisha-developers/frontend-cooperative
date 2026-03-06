@@ -18,7 +18,7 @@ import ApartmentDetailPage from '@/pages/user/ApartmentDetailPage'
 import BookingRequestPage from '@/pages/user/BookingRequestPage'
 import PaymentUploadPage from '@/pages/user/PaymentUploadPage'
 import UserNotificationsPage from '@/pages/user/UserNotificationsPage'
-import UserProfilePage from '@/pages/user/UserProfilePage'
+import ProfileSection from '@/pages/user/ProfileSection'
 
 // Admin
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
@@ -53,7 +53,7 @@ function App() {
           <Route path="/booking/:id" element={<ProtectedRoute><BookingRequestPage /></ProtectedRoute>} />
           <Route path="/payment/:bookingId" element={<ProtectedRoute><PaymentUploadPage /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfileSection /></ProtectedRoute>} />
 
           {/* Admin (protected + admin role) */}
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />

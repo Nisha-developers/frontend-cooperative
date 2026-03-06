@@ -48,7 +48,7 @@ const services = [
         <path d="M16 32v12M32 32v12" />
       </svg>
     ),
-    title: "Agricultural Dividends",
+    title: "Agricultural Cooperative",
     tagline: "Grow With the Cooperative",
     description: "Members participate in the cooperative's agricultural arm and receive annual dividends calculated and distributed by administration. Transparent records, fair returns, communal growth.",
     steps: ["Enroll as a Member", "Track Contribution Status", "Dividend Computed Annually", "Receive Year-End Payout"],

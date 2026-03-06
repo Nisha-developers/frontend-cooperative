@@ -126,7 +126,7 @@ function handleDropdownOpen() {
             <span className={`font-extrabold text-cooperative-orange transition-all duration-300
               group-hover:tracking-wider
               ${scrolled ? 'text-sm custom-1000:text-base' : 'text-[15px] custom-1000:text-lg'}`}>
-              Cooperative
+              Cooperatives
             </span>
           </Link>
 
@@ -253,7 +253,7 @@ function handleDropdownOpen() {
                   Bethel Housing
                 </span>
                 <span className="block text-cooperative-orange font-extrabold text-[15px]">
-                  Cooperative
+                  Cooperatives
                 </span>
               </div>
               <button

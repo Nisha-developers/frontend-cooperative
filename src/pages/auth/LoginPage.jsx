@@ -1,17 +1,22 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import Spinner from "../../components/ui/Spinner";
+import { Navigate } from "react-router-dom";
 export default function Login() {
+  const navigete = useNavigate();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
+  const [loading, setLoading] = useState(false);
+  const {login}  = useAuth();
 
 const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
     const response = await fetch(
-      "http://localhost:8000/api/login/",
+      `${import.meta.env.VITE_API_URL}/api/users/api/login/`,
       {
         method: "POST",
         headers: {
@@ -24,21 +29,31 @@ const handleSubmit = async (e) => {
       }
     );
     const data = await response.json();
-    console.log(data)
-    console.log(Object.keys(data).length)
-
+    console.log(data);
+    setLoading(true);
+    let wallet = data.wallet;
+    let user= data.user;
+   let userDetails = {user, wallet};
+    login(userDetails, data.access)
+      setTimeout(()=>{
+        setLoading(false);
+        navigete('/dashboard');
+      }, 3000)
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
     }
     // Save token if backend returns one
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
-
   } catch (error) {
     console.error("Error:", error.message);
   }
 };
+if(loading){
+ return(
+   <div className="min-h-screen flex items-center justify-center h-9">
+       <Spinner />
+      </div>
+ )
+}
 
   return (
     <div className="min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12">

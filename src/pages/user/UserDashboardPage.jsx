@@ -1,5 +1,9 @@
 import { parse } from "postcss";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import ProfileSection from "./ProfileSection";
+
+
 // ICONS BEGINS
 const Icon = ({ name }) => {
   const icons = {
@@ -58,6 +62,7 @@ const Icon = ({ name }) => {
         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
       </svg>
     ),
+    
     logout: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
@@ -66,30 +71,6 @@ const Icon = ({ name }) => {
   };
   return icons[name] || null;
 };
-// Icons ends
-
-const userData = sessionStorage.getItem('userdata');
-const userRealData = JSON.parse(userData);
-let mockUser ={};
-console.log(userRealData);
-if(userData){
-  mockUser = {
-  fullName: userRealData.full_name,
-  username: userRealData.username,
-  email:  userRealData.email,
-  gender: userRealData.gender,
-  memberSince: "January 2023",
-  memberID: "BCN-2023-00812",
-  avatar: "CE",
-};
-}
-else{
-  console.log('No user data yet')
-
-}
-
-
-
 
 // ─── Nav links ────────────────────────────────────────────────────────────────
 const navLinks = [
@@ -103,55 +84,13 @@ const navLinks = [
 ];
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
-const StatCard = ({ label, value, orange }) => (
+export const StatCard = ({ label, value, orange }) => (
   <div className={`bg-white rounded-xl p-5 shadow-sm flex flex-col gap-1 border-t-4 ${orange ? "border-cooperative-orange" : "border-cooperative-teal"}`}>
     <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">{label}</span>
     <span className="text-2xl font-bold text-cooperative-dark">{value}</span>
   </div>
 );
 
-// ─── PROFILE ──────────────────────────────────────────────────────────────────
-const ProfileSection = ({ user }) => (
-  <div className="max-w-2xl w-full mx-auto flex flex-col gap-6">
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div className="bg-cooperative-dark h-24" />
-      <div className="px-6 pb-6">
-        <div className="flex items-end gap-4 -mt-10 mb-5 flex-wrap">
-          <div className="bg-cooperative-orange text-cooperative-cream w-20 h-20 text-2xl font-black rounded-2xl flex items-center justify-center shadow-lg border-4 border-white shrink-0">
-            {user.avatar}
-          </div>
-          <div className="mb-1">
-            <p className="font-bold text-xl text-cooperative-dark leading-tight">{user.fullName}</p>
-            <p className="text-sm text-gray-400">@{user.username}</p>
-          </div>
-          <button className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-cooperative-cream text-cooperative-dark border border-gray-200 hover:shadow transition">
-            <Icon name="edit" /> Edit Profile
-          </button>
-        </div>
-        <div className="bg-cooperative-cream rounded-xl p-4 grid grid-cols-2 gap-4">
-          {[
-            ["Full Name", user.fullName],
-            ["Username", `@${user.username}`],
-            ["Email", user.email],
-            ["Gender", user.gender],
-            ["Member Since", user.memberSince],
-            ["Member ID", user.memberID],
-          ].map(([k, v]) => (
-            <div key={k}>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{k}</p>
-              <p className="font-semibold text-sm text-cooperative-dark">{v}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-    <div className="grid grid-cols-3 gap-4">
-      <StatCard label="Total Savings" value="₦480,000" orange />
-      <StatCard label="Active Plans" value="3" />
-      <StatCard label="Points" value="1,240" />
-    </div>
-  </div>
-);
 
 // ─── Apartment Card ───────────────────────────────────────────────────────────
 const ApartmentCard = ({ name, location, price, beds, baths, type, badge }) => (
@@ -373,7 +312,7 @@ const PaymentSection = () => (
 
 // ─── Sections map ─────────────────────────────────────────────────────────────
 const sections = {
-  profile:     (user) => <ProfileSection user={user} />,
+  profile:     ()     => <ProfileSection/>,
   purchase:    ()     => <PurchaseSection />,
   rent:        ()     => <RentSection />,
   credit:      ()     => <CreditSection />,
@@ -386,11 +325,22 @@ const sections = {
 export default function UserDashboardPage() {
   // Swap mock for real data:
   // const user = JSON.parse(sessionStorage.getItem('userdata'));
-  const user = mockUser;
+  let {user} = useAuth();
+  console.log(user);
+  const userProfile  = user.user;
+  const walletProfile = user.wallet;
+  const dateCreatedAccount = new Date(user.wallet.created_on);
+
+  const initials = userProfile.full_name
+  .split(' ')
+  .map(name => name[0])
+  .slice(0,2)
+  .join('');
+  
 
   const [active, setActive] = useState("profile");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const notifications = 3;
+  const notifications = 0;
 
   const activeLabel = navLinks.find((n) => n.id === active)?.label ?? "Dashboard";
 
@@ -398,7 +348,7 @@ export default function UserDashboardPage() {
     <div className="bg-cooperative-cream min-h-screen font-sans">
 
       {/* ── Header ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-cooperative-cream border-b border-gray-200 flex items-center px-6 gap-4">
+      <header className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-cooperative-cream border-b border-gray-200 flex items-center px-6 gap-4 shadow-md shadow-cooperative-dark">
         <button className="lg:hidden text-cooperative-dark" onClick={() => setSidebarOpen(!sidebarOpen)}>
           <Icon name={sidebarOpen ? "close" : "menu"} />
         </button>
@@ -406,7 +356,7 @@ export default function UserDashboardPage() {
         {/* Logo */}
         <div className="flex flex-col leading-tight shrink-0">
           <span className="font-black text-cooperative-dark tracking-tight text-lg sm:text-xl">
-            Bethel <span className="text-cooperative-orange">Cooperative</span>
+            Bethel <span className="text-cooperative-orange">Cooperatives</span>
           </span>
           <span className="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase">Member Portal</span>
         </div>
@@ -427,7 +377,7 @@ export default function UserDashboardPage() {
             )}
           </button>
           <div className="bg-cooperative-orange text-white w-9 h-9 rounded-xl font-black text-sm flex items-center justify-center cursor-pointer select-none">
-            {user.avatar}
+          {initials}
           </div>
         </div>
       </header>
@@ -445,10 +395,10 @@ export default function UserDashboardPage() {
         {/* User mini-profile */}
         <div className="px-4 py-5 border-b border-white/10">
           <div className="bg-cooperative-orange text-white w-11 h-11 rounded-xl font-black text-sm flex items-center justify-center mb-3">
-            {user.avatar}
+            {initials}
           </div>
-          <p className="text-cooperative-cream font-bold text-sm leading-tight">{user.fullName}</p>
-          <p className="text-cooperative-cream/50 text-xs">@{user.username}</p>
+          <p className="text-cooperative-cream font-bold text-sm leading-tight">{userProfile.full_name}</p>
+          <p className="text-cooperative-cream/50 text-xs">@{userProfile.username}</p>
         </div>
 
         {/* Nav links */}
@@ -482,14 +432,13 @@ export default function UserDashboardPage() {
 
       {/* ── Main ── */}
       <main className="lg:ml-[220px] mt-[70px] p-6 min-h-[calc(100vh-70px-52px)]">
-        {sections[active]?.(user)}
+        {sections[active]?.(userProfile, walletProfile)}
       </main>
 
       {/* ── Footer ── */}
       <footer className="lg:ml-[220px] bg-cooperative-dark text-cooperative-cream/40 text-center py-4 text-xs font-medium">
-        © 2026 Bethel Cooperative Society Ltd · All rights reserved
+        © {new Date().getFullYear()} Bethel Cooperatives Society Ltd · All rights reserved
       </footer>
-
     </div>
   );
 }

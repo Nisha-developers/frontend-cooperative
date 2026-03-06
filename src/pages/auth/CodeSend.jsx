@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
+import Spinner from '../../components/ui/Spinner.jsx'
 import { useAuth } from '@/context/AuthContext';
 
 const CodeSend = () => {
   const [verificationCode, setVerificationCode] = useState('');
-     const location = useLocation();
-       const navigate = useNavigate();
-        const { login } = useAuth();
-     const email = location.state?.email;
-     console.log(email);
-    const handleResendCode = async () => {
+  const [loading, setLoading] = useState(false);
+  const {fetchUser, user,login} = useAuth();
+  const location = useLocation();
+  const email = location.state?.email;
+  console.log(email);
+  const navigate = useNavigate();
+  const handleResendCode = async () => {
   console.log('I am clicked')
   try {
     const response =await fetch(`${import.meta.env.VITE_API_URL}/api/users/resend-code/`, {
@@ -27,9 +29,9 @@ const CodeSend = () => {
     if (!response.ok) {
       throw new Error(data.message || "Failed to resend code");
     }
-
+   
     alert("Verification code resent successfully ");
-    console.log(data);
+
   } catch (error) {
     console.error("Error:", error);
     alert("Something went wrong while resending code ");
@@ -57,13 +59,15 @@ const CodeSend = () => {
 
     if (response.ok) {
       console.log('user has already signed in', data);
-        login(
-    { id: data.user_id, email },  // or any user info returned
-    data.access,                  // access token
-    data.refresh                  // refresh token
-  );
-
+      setLoading(true);
+      let accessToken = data.access
+      fetchUser(accessToken);
+      login(user, accessToken);
+     setTimeout(()=>{
+      setLoading(false)
       navigate('/dashboard');
+     },3000)
+     
     } else {
       console.log("Verification failed", data);
       alert(data.message || "Invalid code");
@@ -74,6 +78,13 @@ const CodeSend = () => {
     alert("Something went wrong. Check your backend.");
   }
 };
+if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center h-9">
+     <Spinner />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FDF6EC] p-4">

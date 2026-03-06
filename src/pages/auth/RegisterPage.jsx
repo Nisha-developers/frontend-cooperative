@@ -54,13 +54,7 @@ alert('Full in all the required field before you continue')
 
     console.log("Signup:", form);
     // Prepare the data for backend
-    const userData = {
-      full_name: form.full_name,
-      username: form.username,
-      email: form.email,
-      gender: form.gender,
-      is_admin: form.is_admin, 
-    };
+ 
      const userDatas = {
       full_name: form.full_name,
       username: form.username,
@@ -91,7 +85,7 @@ alert('Full in all the required field before you continue')
 
       const data = await response.json();
       console.log("User registered successfully:", data);
-       sessionStorage.setItem('userdata', JSON.stringify(userData));
+       
         setblur(true);
          window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
        } 
