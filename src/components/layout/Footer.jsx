@@ -81,7 +81,7 @@ export default function Footer() {
               </p>
               <h3 className="text-cooperative-cream font-extrabold text-2xl md:text-3xl">
                 Get updates from{" "}
-                <span className="text-cooperative-orange italic">Bethel Cooperative</span>
+                <span className="text-cooperative-orange italic">Bethel Cooperatives</span>
               </h3>
             </div>
           </AnimateOnScroll>
