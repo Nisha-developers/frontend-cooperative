@@ -4,7 +4,6 @@ import { NotificationProvider } from '@/context/NotificationContext'
 
 // Public
 import LandingPage from '@/pages/public/LandingPage'
-import ContactPage from '@/pages/public/ContactPage'
 import NotFoundPage from '@/pages/public/NotFoundPage'
 
 // Auth
@@ -31,6 +30,7 @@ import ManageUsersPage from '@/pages/admin/ManageUsersPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
 import CodeSend from './pages/auth/CodeSend'
+import BethelAgriculturalBody from './pages/public/BethelAgriculturalBody'
 
 function App() {
   return (
@@ -39,7 +39,8 @@ function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/agric" element={<BethelAgriculturalBody />} />
+        
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />

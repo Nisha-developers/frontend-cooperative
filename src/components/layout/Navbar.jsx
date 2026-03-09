@@ -9,23 +9,23 @@ import Dropdown from '../ui/Dropdown'
 // Importation of All the react Components Ends
 
 const navLinks = [
-  { label: 'About us', href: '#aboutus' },
-  { label: 'Our Services', href: '#services' },
+  { label: 'About us', href: '/#aboutus' },
+  { label: 'Our Services', href: '/#services' },
   // { label: 'Cooperative', href: '#cooperative' }, 
   // // { label: 'Apartment', href: '#apartments' },
 ]
 const secondBatch = [
-  { label: 'FAQ', href: '#faq' },
-  { label: 'Contact us', href: '#contactus' },
+  { label: 'FAQ', href: '/#faq' },
+  { label: 'Contact us', href: '/#contactus' },
 ]
 const cooperativeItems = [
-  { label: "Credit and Thrift", href: "credit" },
-  { label: "Agricultural", href: "#agric" },
+  { label: "Credit and Thrift", href: "/credit" },
+  { label: "Agricultural", href: "/agric" },
 ];
 
 const apartmentItems = [
-  { label: "Buy Apartment", href: "#buy" },
-  { label: "Rent Apartment", href: "#rent" },
+  { label: "Buy Apartment", href: "/#buy" },
+  { label: "Rent Apartment", href: "/#rent" },
 ];
 
 const Navbar = () => {
