@@ -30,8 +30,7 @@ import ManageUsersPage from '@/pages/admin/ManageUsersPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
 import CodeSend from './pages/auth/CodeSend'
-import BethelAgriculturalBody from './pages/public/BethelAgriculturalBody'
-
+import BethelAgriculturalBody from '@/pages/public/BethelAgriculturalBody'
 function App() {
   return (
     <AuthProvider>
