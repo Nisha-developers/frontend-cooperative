@@ -33,7 +33,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("")
   const menuRef = useRef(null)
-
+console.log(activeSection);
   // Listen for scroll to add background blur + shadow
   useEffect(() => {
     const handleScroll = () => {
@@ -86,7 +86,6 @@ function handleDropdownOpen() {
       document.body.style.overflow = ''
     }
   }, [isOpen])
-
   // Close mobile menu on ESC key
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -103,6 +102,7 @@ function handleDropdownOpen() {
   function handleNavClick() {
     setIsOpen(false)
   }
+  
 
   return (
     <>
@@ -140,14 +140,14 @@ function handleDropdownOpen() {
                 className={`relative px-3 py-2 text-sm font-medium rounded-lg
                   transition-all duration-300 ease-out
                   hover:bg-cooperative-cream/10
-                  ${activeSection === link.href.replace('#', '')
+                  ${activeSection === link.href.replace('/#', '')
                     ? 'text-cooperative-orange'
                     : 'text-cooperative-cream/85 hover:text-cooperative-cream'
                   }
                   before:content-[''] before:absolute before:bottom-0 before:left-1/2
                   before:-translate-x-1/2 before:h-[2px] before:rounded-full
                   before:bg-cooperative-orange before:transition-all before:duration-300
-                  ${activeSection === link.href.replace('#', '') ? 'before:w-[60%]' : 'before:w-0 hover:before:w-[40%]'}
+                  ${activeSection === link.href.replace('/#', '') ? 'before:w-[60%]' : 'before:w-0 hover:before:w-[40%]'}
                 `}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
@@ -164,14 +164,14 @@ function handleDropdownOpen() {
                 className={`relative px-3 py-2 text-sm font-medium rounded-lg
                   transition-all duration-300 ease-out
                   hover:bg-cooperative-cream/10
-                  ${activeSection === link.href.replace('#', '')
+                  ${activeSection === link.href.replace('/#', '')
                     ? 'text-cooperative-orange'
                     : 'text-cooperative-cream/85 hover:text-cooperative-cream'
                   }
                   before:content-[''] before:absolute before:bottom-0 before:left-1/2
                   before:-translate-x-1/2 before:h-[2px] before:rounded-full
                   before:bg-cooperative-orange before:transition-all before:duration-300
-                  ${activeSection === link.href.replace('#', '') ? 'before:w-[60%]' : 'before:w-0 hover:before:w-[40%]'}
+                  ${activeSection === link.href.replace('/#', '') ? 'before:w-[60%]' : 'before:w-0 hover:before:w-[40%]'}
                 `}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
