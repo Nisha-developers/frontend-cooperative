@@ -33,7 +33,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("")
   const menuRef = useRef(null)
-console.log(activeSection);
+
   // Listen for scroll to add background blur + shadow
   useEffect(() => {
     const handleScroll = () => {

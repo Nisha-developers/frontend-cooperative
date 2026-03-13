@@ -1,11 +1,17 @@
-import { parse } from "postcss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import ProfileSection from "./ProfileSection";
+import { CiSettings } from "react-icons/ci";
+import UserSetting from "./UserSetting";
+import { createPortal } from "react-dom";
+import Input from "../../components/ui/Input";
+
 
 
 // ICONS BEGINS
 const Icon = ({ name }) => {
+ 
+  
   const icons = {
     profile: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -41,6 +47,12 @@ const Icon = ({ name }) => {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
       </svg>
+    ),
+    settings: (
+     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="3"/>
+  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+</svg>
     ),
     bell: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -81,6 +93,7 @@ const navLinks = [
   { id: "agric",       label: "Agricultural Savings",icon: "agric" },
   { id: "transaction", label: "Transaction History", icon: "transaction" },
   { id: "payment",     label: "Payment Details",     icon: "payment" },
+  { id: "Settings",    label: "Settings",            icon: "settings" },
 ];
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
@@ -265,6 +278,7 @@ const TransactionSection = () => {
   );
 };
 
+
 // ─── PAYMENT DETAILS ──────────────────────────────────────────────────────────
 const PaymentSection = () => (
   <div className="flex flex-col gap-6 max-w-xl">
@@ -319,17 +333,24 @@ const sections = {
   agric:       ()     => <AgricSection />,
   transaction: ()     => <TransactionSection />,
   payment:     ()     => <PaymentSection />,
+  Settings:    ()     => <UserSetting />
 };
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function UserDashboardPage() {
   // Swap mock for real data:
   // const user = JSON.parse(sessionStorage.getItem('userdata'));
-  let {user} = useAuth();
+  let {user,  NewAccessToken, token} = useAuth();
+
+      NewAccessToken()
+
+  console.log(token);
   console.log(user);
   const userProfile  = user.user;
   const walletProfile = user.wallet;
   const dateCreatedAccount = new Date(user.wallet.created_on);
+
+  
 
   const initials = userProfile.full_name
   .split(' ')
@@ -345,10 +366,10 @@ export default function UserDashboardPage() {
   const activeLabel = navLinks.find((n) => n.id === active)?.label ?? "Dashboard";
 
   return (
-    <div className="bg-cooperative-cream min-h-screen font-sans">
+    <div className="bg-cooperative-cream min-h-screen font-sans animate-blurIn">
 
       {/* ── Header ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-cooperative-cream border-b border-gray-200 flex items-center px-6 gap-4 shadow-md shadow-cooperative-dark">
+      <header className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-cooperative-cream border-b border-gray-200 flex items-center px-6 gap-4 shadow-md shadow-cooperative-dark ">
         <button className="lg:hidden text-cooperative-dark" onClick={() => setSidebarOpen(!sidebarOpen)}>
           <Icon name={sidebarOpen ? "close" : "menu"} />
         </button>
@@ -439,6 +460,9 @@ export default function UserDashboardPage() {
       <footer className="lg:ml-[220px] bg-cooperative-dark text-cooperative-cream/40 text-center py-4 text-xs font-medium">
         © {new Date().getFullYear()} Bethel Cooperatives Society Ltd · All rights reserved
       </footer>
+      {createPortal(
+        <div className={`absolute inset-0 z-[10000]`}><Input/></div>, document.body
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useAuth } from "../../context/AuthContext"
 import { StatCard } from "./UserDashboardPage";
 
+
 export default function ProfileSection(){
   const {user} = useAuth();
   console.log(user);

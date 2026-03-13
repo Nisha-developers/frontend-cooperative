@@ -407,7 +407,7 @@ alert('Full in all the required field before you continue')
       </div>
       </div>
       { createPortal(<div>
-        <div className={`w-[25%] z-[10000] bg-white absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] p-5 font-bold border-[1px] border-cooperative-dark rounded-md shadow-2xl shadow-cooperative-dark ${blur ? 'block': 'hidden'}`}> 
+        <div className={`w-[90%] max-w-[800px] z-[10000] bg-white absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] p-5 font-bold border-[1px] border-cooperative-dark rounded-md shadow-2xl shadow-cooperative-dark ${blur ? 'block': 'hidden'}`}> 
           <div className="flex justify-center pb-3">
           <FaCheck />
           </div>

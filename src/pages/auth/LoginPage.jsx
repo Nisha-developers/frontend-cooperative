@@ -34,6 +34,7 @@ const handleSubmit = async (e) => {
     let wallet = data.wallet;
     let user= data.user;
    let userDetails = {user, wallet};
+   console.log(data.access)
     login(userDetails, data.access)
       setTimeout(()=>{
         setLoading(false);
@@ -47,13 +48,15 @@ const handleSubmit = async (e) => {
     console.error("Error:", error.message);
   }
 };
-if(loading){
- return(
-   <div className="min-h-screen flex items-center justify-center h-9">
-       <Spinner />
-      </div>
- )
-}
+// console.log(loading);
+// if(loading){
+//  return(
+//    <div className="min-h-screen flex items-center justify-center h-9">
+//        <Spinner />
+
+//       </div>
+//  )
+// }
 
   return (
     <div className="min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12">
