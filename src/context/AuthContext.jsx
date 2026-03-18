@@ -4,9 +4,19 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
 
 
-  const [user, setUser] = useState({})
+  const [user, setUser] = useState(null)
   const [token, setToken] = useState()
  
+   useEffect(() => {
+  const init = async () => {
+    const newToken = await NewAccessToken();
+    if (newToken) {
+      await fetchUser(newToken);
+    }
+  };
+  init();
+}, []); // empty dependency array = runs once on mount
+console.log(user);
  
 
   // function to login begins
@@ -35,6 +45,7 @@ async function NewAccessToken() {
     const data = await response.json();
     const newAccessToken = data.access;
     setToken(newAccessToken);
+    return data.access;
   } catch (error) {
    
     console.error("Error getting new access token:", error);
@@ -56,13 +67,16 @@ async function NewAccessToken() {
 
     // Token expired — refresh and retry
     if (res.status === 401) {
-      await NewAccessToken();  // wait for new token
-      return fetchUser(token); // retry with new token
+      const newToken = await NewAccessToken();
+      if (newToken) return fetchUser(newToken); // retry with new token
+      else throw new Error("Unable to refresh token");
     }
 
     if (!res.ok) throw new Error("Server error");
 
     const data = await res.json();
+    console.log(data)
+    console.log('hi');
     setUser(data);
 
   } catch (err) {

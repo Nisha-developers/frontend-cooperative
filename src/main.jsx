@@ -4,13 +4,20 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
+import DashboardLayout from './components/layout/DashboardLayout'
+import RentApartment from './components/landing/RentApartment'
+import BuyApartment from './components/landing/BuyApartment'
+
 
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App /> 
+    {/* <DashboardLayout /> */}
+       <App />  
+       {/* <BuyApartment /> */}
+       {/* <RentApartment />  */}
       <Toaster position="top-right" />
     </BrowserRouter>
   </React.StrictMode>

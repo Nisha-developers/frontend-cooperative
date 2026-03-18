@@ -1,0 +1,36 @@
+.grid-dashbord{
+    background-color: #FDF6EC;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 16.3vw 5fr;
+    grid-template-rows: 60px auto ;
+    gap: 0.2rem;
+    padding: 0.2rem;
+    grid-template-areas: 'a h'
+                         'a m'
+                         'a m';
+}
+.header{
+    background-color: green;
+    grid-area: h;
+   position: fixed;
+   width: 100%;
+  }
+.main{
+    background-color: rgb(36, 36, 88);
+    grid-area: m;
+}
+.aside{
+    background-color: #003000;
+    color: #FDF6EC;
+    grid-area: a;
+    position: fixed;
+    height: 99vh;
+    width: 16.3vw;
+}
+
+.item{
+    border-radius: 10px;
+}
+
+

@@ -12,9 +12,6 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 
 // User
 import UserDashboardPage from '@/pages/user/UserDashboardPage'
-import ApartmentsPage from '@/pages/user/ApartmentsPage'
-import ApartmentDetailPage from '@/pages/user/ApartmentDetailPage'
-import BookingRequestPage from '@/pages/user/BookingRequestPage'
 import PaymentUploadPage from '@/pages/user/PaymentUploadPage'
 import UserNotificationsPage from '@/pages/user/UserNotificationsPage'
 import ProfileSection from '@/pages/user/ProfileSection'
@@ -31,6 +28,8 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
 import CodeSend from './pages/auth/CodeSend'
 import BethelAgriculturalBody from '@/pages/public/BethelAgriculturalBody'
+import RentApartment from './components/landing/RentApartment'
+import BuyApartment from './components/landing/BuyApartment'
 function App() {
   return (
     <AuthProvider>
@@ -39,7 +38,8 @@ function App() {
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/agric" element={<BethelAgriculturalBody />} />
-        
+        <Route path="/rent" element={<RentApartment />} />
+        <Route path="/buy" element={<BuyApartment />} />
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
@@ -48,9 +48,8 @@ function App() {
 
           {/* User (protected) */}
           <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
-          <Route path="/apartments" element={<ProtectedRoute><ApartmentsPage /></ProtectedRoute>} />
-          <Route path="/apartments/:id" element={<ProtectedRoute><ApartmentDetailPage /></ProtectedRoute>} />
-          <Route path="/booking/:id" element={<ProtectedRoute><BookingRequestPage /></ProtectedRoute>} />
+         
+        
           <Route path="/payment/:bookingId" element={<ProtectedRoute><PaymentUploadPage /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfileSection /></ProtectedRoute>} />

@@ -21,14 +21,15 @@ const secondBatch = [
 const cooperativeItems = [
   { label: "Credit and Thrift", href: "/credit" },
   { label: "Agricultural", href: "/agric" },
+  {label: 'Housing Cooperative', href: '/house'}
 ];
 
 const apartmentItems = [
-  { label: "Buy Apartment", href: "/#buy" },
-  { label: "Rent Apartment", href: "/#rent" },
+  { label: "Buy Apartment", href: "/buy" },
+  { label: "Rent Apartment", href: "/rent" },
 ];
 
-const Navbar = () => {
+const Navbar = ({bgvar, setbgvar}) => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("")
@@ -42,6 +43,7 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+  const continueValue = bgvar ?? false;
 
   // IntersectionObserver — sets activeSection to whichever section is in view
   useEffect(() => {
@@ -111,7 +113,7 @@ function handleDropdownOpen() {
         className={`fixed top-0 left-0 right-0 z-[999] transition-all duration-500 ease-in-out
           ${scrolled
             ? 'bg-cooperative-dark/90 backdrop-blur-xl shadow-lg shadow-cooperative-dark/20 py-2'
-            : 'bg-transparent py-4'
+            : `${continueValue ? 'bg-cooperative-dark  py-2' : 'bg-transparent py-4'}`
           }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
