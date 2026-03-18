@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboaHeader from './DashboadHeader.jsx';
-import DashboardAside from './dashboardAside.jsx';
-import Dashboardmain from './dashboardmain.jsx';
+import DashboardAside from './DashboardAside.jsx';
+import Dashboardmain from './Dashboardmain.jsx';
 import AgricCooperative from '../../pages/user/AgricCooperative.jsx';
 import BuyApartment from '../../pages/user/BuyApartment.jsx';
 // import RentApartment from '../../pages/user/RentApartment.jsx';
