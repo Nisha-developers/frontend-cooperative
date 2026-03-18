@@ -21,7 +21,7 @@ const secondBatch = [
 const cooperativeItems = [
   { label: "Credit and Thrift", href: "/credit" },
   { label: "Agricultural", href: "/agric" },
-  {label: 'Housing Cooperative', href: '/house'}
+  {label: 'Housing', href: '/house'}
 ];
 
 const apartmentItems = [
