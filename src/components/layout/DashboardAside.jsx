@@ -24,7 +24,7 @@ const Cooperative = [
 ];
 
 const Others = [
-  { id: 1, link: 'Transaction', label: 'Transactions', icon: RiHistoryLine },
+  { id: 1, link: 'transaction', label: 'Transactions', icon: RiHistoryLine },
   { id: 2, link: 'settings', label: 'Settings', icon: RiSettings4Line },
   { id: 3, link: 'payment', label: 'Payment Info', icon: RiWallet3Line }
 ];

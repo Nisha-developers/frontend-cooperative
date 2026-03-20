@@ -4,7 +4,8 @@ import DashboardAside from './DashboardAside.jsx';
 import Dashboardmain from './Dashboardmain.jsx';
 import AgricCooperative from '../../pages/user/AgricCooperative.jsx';
 import BuyApartment from '../../pages/user/BuyApartment.jsx';
-// import RentApartment from '../../pages/user/RentApartment.jsx';
+import RentApartment from '../../pages/user/RentApartment.jsx';
+
 import CreditAndThrift from '../../pages/user/CreditAndThrift.jsx';
 import PaymentInfo from '../../pages/user/PaymentInfo.jsx';
 import Setting from '../../pages/user/Setting.jsx';
@@ -35,7 +36,7 @@ useEffect(() => {
 }, []);
 const pages = {
   dashboard: Dashboardmain,
-  // rent: RentApartment,
+  rent:RentApartment,
   buy: BuyApartment,
   housing: HousingCooperative,
   agricultural: AgricCooperative,

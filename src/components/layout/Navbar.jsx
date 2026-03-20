@@ -231,7 +231,7 @@ function handleDropdownOpen() {
           {/* Overlay backdrop */}
           <div
             className={`custom-1000:hidden fixed inset-0 bg-cooperative-dark/60 backdrop-blur-sm
-              transition-opacity duration-400 z-[9998]
+              transition-opacity duration-400 z-[99998]
               ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setIsOpen(false)}
           />
@@ -243,7 +243,7 @@ function handleDropdownOpen() {
               bg-gradient-to-b from-cooperative-cream to-cooperative-cream/95
               backdrop-blur-xl shadow-2xl shadow-cooperative-dark/30
               transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
-              overflow-hidden z-[100000000000]
+              overflow-hidden z-[100001]
               ${isOpen
                 ? 'max-h-[100vh] opacity-100 translate-y-0'
                 : 'max-h-0 opacity-0 -translate-y-4'}`}

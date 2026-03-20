@@ -22,6 +22,9 @@ import {
   fadeLeft,
   scaleIn,
 } from '../../animations/AnimateOnScroll.jsx';
+import { createPortal } from 'react-dom';
+import PopupForm from '../ui/PopupForm.jsx';
+
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -87,10 +90,29 @@ const apartments = [
     sqft: "3,200 sq ft",
   }
 ];
-
+// const formfields = [
+//   { name: 'fullName', label: 'Full Name', type: 'text', placeholder: 'John Doe', required: true },
+//   { name: 'email', label: 'Email', type: 'email', placeholder: 'you@email.com', required: true },
+//   { name: 'dob', label: 'Date of Birth', type: 'date', required: false },
+//   { name: 'amount', label: 'Amount (₦)', type: 'number', placeholder: '0.00' },
+//   { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+234...' },
+//   { name: 'password', label: 'Password', type: 'password' },
+//   { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Other'] },
+//   { name: 'status', label: 'Status', type: 'radio', options: ['Active', 'Inactive'] },
+//   { name: 'agree', label: 'I agree to terms', type: 'checkbox' },
+//   { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Additional info...' },
+//   { name: 'avatar', label: 'Profile Photo', type: 'image', accept: 'image/*' },
+//   { name: 'document', label: 'Document', type: 'file', accept: '.pdf,.doc,.docx' },
+//   { name: 'color', label: 'Colour', type: 'color' },
+//   { name: 'range', label: 'Priority', type: 'range', min: 1, max: 10 },
+//   { name: 'website', label: 'Website', type: 'url' },
+//   { name: 'time', label: 'Time', type: 'time' },
+//   { name: 'month', label: 'Month', type: 'month' }
+// ];
 
 const ApartmentCard = ({ apartment }) => {
   const [isLiked, setIsLiked] = useState(false);
+
 
   return (
     <motion.div
@@ -215,6 +237,7 @@ const ApartmentCard = ({ apartment }) => {
 const RentApartment = () => {
   const [filter, setFilter] = useState('all');
   const [bg, setbg] = useState(false);
+    const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setbg(true);
@@ -265,8 +288,20 @@ const RentApartment = () => {
           </motion.button>
         </div>
       </AnimateOnScroll>
-
+   
       <Footer />
+   {createPortal(
+    <div className='z-[100030]'>
+  {/* <PopupForm
+    title="File Details"
+    formfield={formfields}   
+    onSubmit={(data) => console.log(data)}
+    onClose={() => setOpen(true)}
+    isOpen={open}
+    submitLabel="Submit"
+  /> */}
+  </div>,document.body
+)}
     </div>
   );
 };

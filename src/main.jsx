@@ -7,6 +7,7 @@ import './index.css'
 import DashboardLayout from './components/layout/DashboardLayout'
 import RentApartment from './components/landing/RentApartment'
 import BuyApartment from './components/landing/BuyApartment'
+import PopupForm from './components/ui/PopupForm'
 
 
 
@@ -14,10 +15,11 @@ import BuyApartment from './components/landing/BuyApartment'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-    {/* <DashboardLayout /> */}
-       <App />  
+     <DashboardLayout /> 
+       {/* <App />   */}
+       {/* <PopupForm /> */}
        {/* <BuyApartment /> */}
-       {/* <RentApartment />  */}
+        {/* <RentApartment />   */}
       <Toaster position="top-right" />
     </BrowserRouter>
   </React.StrictMode>
