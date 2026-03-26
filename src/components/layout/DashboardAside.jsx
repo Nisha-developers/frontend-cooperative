@@ -1,5 +1,5 @@
 import React from 'react';
-import { CiMenuBurger, CiLogout, CiCircleRemove } from "react-icons/ci";
+import { CiMenuBurger, CiLogout, CiCircleRemove} from "react-icons/ci";
 import { 
   RiHomeOfficeLine, 
   RiShoppingBagLine,
@@ -11,6 +11,7 @@ import {
   RiWallet3Line,
   RiDashboardLine
 } from "react-icons/ri";
+
 
 const housingServices = [
   { id: 1, link: 'rent', label: 'Rent Apartment', icon: RiHomeOfficeLine },
@@ -29,12 +30,15 @@ const Others = [
   { id: 3, link: 'payment', label: 'Payment Info', icon: RiWallet3Line }
 ];
 
-const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMenuOpen }) => {
+const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMenuOpen, componentUserValue}) => {
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) {
       setMobileMenuOpen(false);
     }
   };
+  const userValue = componentUserValue.user;
+ 
+ 
 
   const NavItem = ({ icon: Icon, label, link }) => {
     // Determine if we should show the label
@@ -81,17 +85,24 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
   };
 
   return (
-    <div className="flex flex-col h-full py-6 bg-white">
+    <div className="flex flex-col h-full py-2 bg-white ">
       {/* Logo and Toggle */}
-      <div className="flex items-center justify-between px-4 mb-8">
+      <div className="flex items-center justify-between px-4 mb-0">
         <div className={`flex items-center transition-all duration-300 ${
           (iscollapse || mobileMenuOpen) ? 'opacity-100' : 'opacity-0 hidden'
         }`}>
           <div className="w-8 h-8 bg-[#F57C00] rounded-lg flex items-center justify-center">
-            <span className="text-[#FDF6EC] font-bold text-xl">B</span>
+            <span className="text-[#FDF6EC] font-bold text-xl">{
+  userValue.full_name
+    ?.split(' ')
+    .map(name => name[0]?.toUpperCase())
+    .join('')
+}
+  </span>
           </div>
-          <span className="ml-3 text-[#003000] font-bold text-xl">Bethel</span>
+          <span className="ml-3 text-[#003000] font-bold text-xl">Bethel <span className='text-cooperative-orange'>Cooperative</span></span>
         </div>
+        
         
         {/* Mobile close button */}
         {mobileMenuOpen && (
@@ -101,6 +112,7 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
           >
             <CiCircleRemove size={24} />
           </button>
+
         )}
 
         {/* Desktop toggle */}
@@ -112,7 +124,12 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
             !iscollapse ? 'rotate-180' : ''
           }`} />
         </button>
+       
       </div>
+      <div className={`text-cooperative-dark  font-bold py-4 px-4  flex-col gap-2 ${iscollapse ? 'flex': 'hidden'}`}>
+        <div>@{userValue.username}</div>
+        <div>{userValue.membership_id}</div>
+        </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#2E7D32]/20">

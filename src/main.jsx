@@ -15,8 +15,8 @@ import PopupForm from './components/ui/PopupForm'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-     <DashboardLayout /> 
-       {/* <App />   */}
+     {/* <DashboardLayout />  */}
+        <App />   
        {/* <PopupForm /> */}
        {/* <BuyApartment /> */}
         {/* <RentApartment />   */}

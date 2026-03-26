@@ -254,6 +254,7 @@ const PopupForm = ({
 }) => {
   const [formData, setFormData] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -274,7 +275,7 @@ const PopupForm = ({
 
   return (
     <AnimatePresence>
-      {!isOpen && (
+      {isOpen && (
         <>
           {/* Backdrop */}
           <motion.div

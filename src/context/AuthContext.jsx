@@ -1,98 +1,100 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
+
+const BASE_URL = import.meta.env.VITE_API_URL
+
 const AuthContext = createContext(null)
 
+
+let _accessToken = null
+
+function setAccessToken(t)  { _accessToken = t ?? null }
+function getAccessToken()   { return _accessToken }
+function authHeader()       { return _accessToken ? { Authorization: `Bearer ${_accessToken}` } : {} }
+
+// ── base fetch with credentials (always sends the httpOnly cookie) ─────────────
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    credentials: 'include',
+    ...options,
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw { status: res.status, ...data }
+  return data
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 export function AuthProvider({ children }) {
+  const [user, setUser]       = useState(null)
+  const [loading, setLoading] = useState(true)  
+  useEffect(() => {
+    refreshAndFetchUser().finally(() => setLoading(false))
+  }, [])
 
+  // ── refresh access token via cookie ─────────────────────────────────────────
+  const refreshAccessToken = useCallback(async () => {
+    const data = await apiFetch('/api/token/refresh/', { method: 'POST' })
+    setAccessToken(data.access)
+  
+    return data.access
+  }, [])
 
-  const [user, setUser] = useState(null)
-  const [token, setToken] = useState()
- 
-   useEffect(() => {
-  const init = async () => {
-    const newToken = await NewAccessToken();
-    if (newToken) {
-      await fetchUser(newToken);
+  // ── fetch user with current in-memory token ──────────────────────────────────
+  const fetchUser = useCallback(async () => {
+    const data = await apiFetch('/api/users/me/', { headers: authHeader() })
+    setUser(data)
+    return data
+  }, [])
+
+  // ── refresh then fetch (used on mount + after login) ─────────────────────────
+  const refreshAndFetchUser = useCallback(async () => {
+    try {
+      await refreshAccessToken()
+      await fetchUser()
+    } catch {
+      // Cookie missing or expired — clear everything
+      setAccessToken(null)
+      setUser(null)
     }
-  };
-  init();
-}, []); // empty dependency array = runs once on mount
-console.log(user);
- 
-
-  // function to login begins
-  const login = (userData, authToken) => {
-   setUser(userData);
-   setToken(authToken);
-  }
-  // function to login ends
+  }, [refreshAccessToken, fetchUser])
 
 
-  // Function to refresh token begins;
-async function NewAccessToken() {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/token/refresh/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+  const login = useCallback((userData, accessToken) => {
+    setAccessToken(accessToken)
+    setUser(userData)
+  }, [])
 
-    if (!response.ok) {
-      throw new Error("Failed to get a new access token");
+  
+  const logout = useCallback(async () => {
+    try {
+      await apiFetch('/api/users/logout/', {
+        method: 'POST',
+        headers: authHeader(),
+      })
+    } catch {
+      // Even if the request fails, clear client-side state
+    } finally {
+      setAccessToken(null)
+      setUser(null)
     }
+  }, [])
 
-    const data = await response.json();
-    const newAccessToken = data.access;
-    setToken(newAccessToken);
-    return data.access;
-  } catch (error) {
-   
-    console.error("Error getting new access token:", error);
-    return null;
-  }
-}
-  // Function to refresh token ends
- async function fetchUser(istoken = '') {
-  if (!token && !istoken) return;
-
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token ?? istoken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    // Token expired — refresh and retry
-    if (res.status === 401) {
-      const newToken = await NewAccessToken();
-      if (newToken) return fetchUser(newToken); // retry with new token
-      else throw new Error("Unable to refresh token");
-    }
-
-    if (!res.ok) throw new Error("Server error");
-
-    const data = await res.json();
-    console.log(data)
-    console.log('hi');
-    setUser(data);
-
-  } catch (err) {
-    console.error("Error fetching user:", err);
-    logout();
-  }
-}
-  const logout = () => {
-    setUser(null)
-    setToken(null)
-  }
-
-  const isAdmin = user?.role === 'admin'
+  const isAdmin      = user?.user?.is_admin === true
+  const isLoggedIn   = user !== null
 
   return (
-    <AuthContext.Provider value={{ user, token, NewAccessToken,  login, logout, isAdmin, fetchUser}}>
+    <AuthContext.Provider value={{
+      user,           // full response from /api/users/me/
+      loading,        // true until the first session check completes
+      isLoggedIn,
+      isAdmin,
+      login,          // (userData, accessToken) => void
+      logout,         // async () => void
+      fetchUser,      // manually re-fetch user data if needed
+      refreshAccessToken,  // get a new access token if needed
+      getAccessToken, // read the current in-memory token
+    }}>
       {children}
     </AuthContext.Provider>
   )

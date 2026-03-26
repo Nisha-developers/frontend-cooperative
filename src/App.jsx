@@ -11,7 +11,7 @@ import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 
 // User
-import UserDashboardPage from '@/pages/user/UserDashboardPage'
+
 import PaymentUploadPage from '@/pages/user/PaymentUploadPage'
 import UserNotificationsPage from '@/pages/user/UserNotificationsPage'
 import ProfileSection from '@/pages/user/ProfileSection'
@@ -30,6 +30,10 @@ import CodeSend from './pages/auth/CodeSend'
 import BethelAgriculturalBody from '@/pages/public/BethelAgriculturalBody'
 import RentApartment from './components/landing/RentApartment'
 import BuyApartment from './components/landing/BuyApartment'
+import DashboardLayout from './components/layout/DashboardLayout'
+import ForgetPassword from './pages/auth/ForgetPassword'
+import VerifyPassword from './pages/auth/VerifyPassword'
+import PasswordReset from './pages/auth/PasswordReset'
 function App() {
   return (
     <AuthProvider>
@@ -45,9 +49,12 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
            <Route path="/code-send" element={<CodeSend />} />
+           <Route path="/forget-password" element={<ForgetPassword />} />
+            <Route path="/verify-forget-password" element={<VerifyPassword />} />
+             <Route path="/reset-password" element={<PasswordReset />} />
 
           {/* User (protected) */}
-          <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
          
         
           <Route path="/payment/:bookingId" element={<ProtectedRoute><PaymentUploadPage /></ProtectedRoute>} />

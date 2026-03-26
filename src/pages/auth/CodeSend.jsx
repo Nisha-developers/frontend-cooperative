@@ -65,7 +65,7 @@ const CodeSend = () => {
       login(user, accessToken);
      setTimeout(()=>{
       setLoading(false)
-      navigate('/dashboard');
+      navigate('/login');
      },3000)
      
     } else {
