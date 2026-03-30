@@ -34,7 +34,7 @@ const PopupMessage = ({
         badge: 'bg-cooperative-teal/10 text-cooperative-teal',
         badgeLabel: 'Success',
         btnClass: 'bg-cooperative-teal hover:bg-cooperative-dark',
-        btnLabel: 'Great, thanks!',
+        btnLabel: 'ok!',
       }
     : {
         icon: <RiCloseCircleLine className="text-4xl text-cooperative-orange" />,
@@ -43,7 +43,7 @@ const PopupMessage = ({
         badge: 'bg-cooperative-orange/10 text-cooperative-orange',
         badgeLabel: 'Error',
         btnClass: 'bg-cooperative-orange hover:bg-cooperative-dark',
-        btnLabel: 'Okay, got it',
+        btnLabel: 'ok',
       };
 
   return (

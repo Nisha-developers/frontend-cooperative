@@ -10,11 +10,6 @@ const PasswordReset = () => {
   const navigate = useNavigate();
   const resetToken = localStorage.getItem('resetToken');
   console.log(resetToken);
-
- 
-   
-
-
   const handleVerify = async () => {
     if (!password || !confirmPassword) {
       setMessage('Please enter both password fields');
@@ -56,7 +51,7 @@ const PasswordReset = () => {
         setMessage('✓ Password reset successful!');
         setIsValid(true);
         localStorage.removeItem('resetToken');
-        setTimeout(() => navigate('/login'), 1500); 
+        setTimeout(() => navigate('/adminlogin45'), 1500); 
       } else {
         setMessage(data?.message || '✗ Password reset failed. Please try again.');
         setIsValid(false);

@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Spinner from "../../components/ui/Spinner";
 import { Navigate } from "react-router-dom";
+import { createPortal } from "react-dom";
+import PopupMessage from "../../components/ui/PopupMessage";
 
 export default function Login() {
   const navigete = useNavigate();
@@ -10,6 +12,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('')
+  const [error, seterror] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const {login}  = useAuth();
  
 
@@ -32,21 +38,36 @@ export default function Login() {
         }
       );
       const data = await response.json();
-      console.log(data);
-      setLoading(true);
+       if (!response.ok) {
+       setIsOpen(true);
+       setMessage('Account not found. Please check your credentials and try again.');
+       setTitle('Login Error');
+       seterror('error')
+
+        throw new Error(data.message || "Login failed");
+      }
       let wallet = data.wallet;
       let user= data.user;
-     let userDetails = {user, wallet};
-     console.log(data.access)
+      const isUser = user.is_admin;
+      if(isUser){
+        setLoading(true);
+        setIsOpen(true);
+        setMessage('This account belong to the admin. Login to admin and try again');
+        setTitle('Login Error');
+        seterror(error)
+      }else{
+       setLoading(true);
+       setIsOpen(true);
+       setMessage('Login successful! Redirecting to dashboard');
+       setTitle('Login Success');
+       seterror('success')
+      let userDetails = {user, wallet};
       login(userDetails, data.access)
         setTimeout(()=>{
           setLoading(false);
           navigete('/dashboard');
-        }, 3000)
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        }, 4000)
       }
-      // Save token if backend returns one
     } catch (error) {
       console.error("Error:", error.message);
     }
@@ -100,7 +121,7 @@ export default function Login() {
                 htmlFor="identifier"
                 className="block text-xs font-bold text-cooperative-dark uppercase tracking-wider mb-2 transition-colors group-focus-within:text-cooperative-teal"
               >
-                Email or Username
+                Email
               </label>
               <div
                 className={`relative rounded-xl border-2 transition-all duration-300 ${
@@ -300,6 +321,13 @@ export default function Login() {
           animation-delay: 700ms;
         }
       `}</style>
+      {createPortal(<PopupMessage
+      isOpen={isOpen}
+      type={error}              
+     title={title}
+     message={message}
+      onClose={() => setIsOpen(false)}
+   />, document.body)}
     </div>
   );
 }

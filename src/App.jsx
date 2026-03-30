@@ -34,7 +34,14 @@ import DashboardLayout from './components/layout/DashboardLayout'
 import ForgetPassword from './pages/auth/ForgetPassword'
 import VerifyPassword from './pages/auth/VerifyPassword'
 import PasswordReset from './pages/auth/PasswordReset'
+import LoginForm from './components/auth/LoginForm'
+import RegisterForm from './components/auth/RegisterForm'
+import CodeSenda from './components/auth/codeSenda'
+import ForgetPassworda from './components/auth/ForgetPassworda'
+import VerifyPassworda from './components/auth/VerifyPassworda'
+import ResetPassworda from './components/auth/ResetPassworda'
 function App() {
+ 
   return (
     <AuthProvider>
       <NotificationProvider>
@@ -52,6 +59,14 @@ function App() {
            <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/verify-forget-password" element={<VerifyPassword />} />
              <Route path="/reset-password" element={<PasswordReset />} />
+             {/* Admin login session begins */}
+           <Route path="/adminlogin45" element={<LoginForm />} />
+          <Route path="/adminregister45" element={<RegisterForm />} />
+           <Route path="/admincode-send45" element={<CodeSenda />} />
+           <Route path="/adminforget-password45" element={<ForgetPassworda />} />
+            <Route path="/adminverify-forget-password45" element={<VerifyPassworda />} />
+             <Route path="/adminreset-password45" element={<ResetPassworda />} />
+             {/* Admin login session ends */}
 
           {/* User (protected) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />

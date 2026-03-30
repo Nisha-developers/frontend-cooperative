@@ -64,7 +64,7 @@ setIsLoading(true);
 // Wait 3 seconds, then navigate
 setTimeout(() => {
   setIsLoading(false);
- navigate('/verify-forget-password', {
+ navigate('/adminverify-forget-password45', {
   state: { email }
 });
 }, 3000);

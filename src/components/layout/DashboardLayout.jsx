@@ -12,6 +12,7 @@ import Setting from '../../pages/user/Setting.jsx';
 import Transaction from '../../pages/user/Transaction.jsx';
 import HousingCooperative from '../../pages/user/HousingCooperative.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import PopupMessage from '../ui/PopupMessage.jsx';
 
 
 
@@ -25,6 +26,7 @@ const [activePage, setActivePage] = useState(
 );
 const {user} = useAuth();
 const userValue = user;
+const isAdmin = userValue?.user.is_admin;
 
 useEffect(() => {
   const handleHashChange = () => {
@@ -50,6 +52,9 @@ const pages = {
 };
 
 const PageComponent = pages[activePage] || Dashboardmain;
+if(isAdmin){
+  return(<PopupMessage message="You are not authorized to view this page." title='User dashboard Error' type='error' isOpen = {true}/>);
+}
 
 
   return (

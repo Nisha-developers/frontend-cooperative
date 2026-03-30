@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa6";
+import PopupMessage from "../../components/ui/PopupMessage";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -19,8 +20,13 @@ export default function Signup() {
   const [agreed, setAgreed] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [usernameError, setUserNameErr] = useState(false);
-  const [blur, setblur] = useState(false);
 
+  const [message, setMessage] = useState('');
+  const [title, setTitle] = useState('');
+const [isOpen, setOpen] = useState(false);
+const [type, setType] = useState('');
+const [delayed, setdelayed] = useState(false);
+const [success, setSuccess] = useState(false);
 
   const passwordStrength = (pwd) => {
     if (!pwd) return { level: 0, label: "", color: "" };
@@ -73,20 +79,46 @@ alert('Full in all the required field before you continue')
         },
         body: JSON.stringify(userDatas),
       });
+      setdelayed(true);
 
       if (!response.ok) {
         const err = await response.json();
         console.error("Backend error:", err);
          setUserNameErr(err.username ? true : false);
          setEmailError(err.email ? true : false);
+         if(emailError && usernameError){
+             setOpen(true)
+          setMessage('The email and username is already existing');
+          setTitle('Sign up Error')
+          setType('error')
+         }
+         else if(emailError){
+          setOpen(true)
+          setMessage('The email is already existing');
+          setTitle('Sign up Error')
+          setType('error')
+         }
+         else if(usernameError){
+          setOpen(true)
+          setMessage('The username is already existing');
+          setTitle('Sign up Error')
+          setType('error')
+         }
+         else{
+          console.log('inability to sign up');
+         }
       window.scrollTo({ top: 80, left: 0, behavior: "smooth" });
         return;
       }
 
       const data = await response.json();
       console.log("User registered successfully:", data);
+      setOpen(true);
+      setMessage('You have successfully created an account. Login to continue');
+      setType('success');
+      setTitle('Account Created')
+      setSuccess(true)
        
-        setblur(true);
          window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
        } 
     
@@ -94,21 +126,16 @@ alert('Full in all the required field before you continue')
       console.error("Network error:", error);
       alert("An error occurred while registering the user.");
           }
-  
   };
-   useEffect(() => {
-    if (blur) {
-      const timer = setTimeout(() => {
-       navigate("/code-send", {
-        state: { email: form.email }
-       });
-      }, 6000);
-
-      return () => clearTimeout(timer); // cleanup in case component unmounts
-    }
-  }, [blur, navigate]);
-
-  // Function to handle submit begins.
+  useEffect(()=>{
+   const timer = setTimeout(() => {
+      setdelayed(false)
+      if(success){
+        navigate('/code-send', {state:{email}})
+      }
+    }, 4000);
+    return ()=> clearTimeout(timer);
+  },[success, navigate])
 
   const fields = [
     { id: "full_name", label: "Full Name", type: "text", placeholder: "Jane Smith", icon: (
@@ -116,12 +143,12 @@ alert('Full in all the required field before you continue')
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     )},
-    { id: "username", label: "Username", type: "text", placeholder: "janesmith", message: 'The user name is already in existence', icon: (
+    { id: "username", label: "Username", type: "text", placeholder: "janesmith", icon: (
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
       </svg>
     )},
-    { id: "email", label: "Email Address", type: "email", placeholder: "jane@example.com", message: 'The email address is already taken', icon: (
+    { id: "email", label: "Email Address", type: "email", placeholder: "jane@example.com", icon: (
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
@@ -129,9 +156,9 @@ alert('Full in all the required field before you continue')
   ];
 
   return (
-    <div className={`min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12 ${blur ? 'h-[100vh]' : ''}`}>
+    <div className={`min-h-screen bg-cooperative-cream flex items-center justify-center px-4 py-12 `}>
       {/* Background */}
-      <div className={`${blur ? 'blur-[20px]' : ''}`}>
+      <div >
       <div
         className="fixed inset-0 opacity-30 pointer-events-none"
         style={{
@@ -166,7 +193,7 @@ alert('Full in all the required field before you continue')
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Standard fields */}
-            {fields.map(({ id, label, type, placeholder, message, icon }, index) => (
+            {fields.map(({ id, label, type, placeholder, icon }, index) => (
               <div key={id}>
                 <label
                   htmlFor={id}
@@ -194,8 +221,6 @@ alert('Full in all the required field before you continue')
                     required
                   />
                 </div>
-                  {index === 2 &&emailError && <p className="text-red-600 font-bold">{message}</p>}
-                    {index === 1 && usernameError && <p className="text-red-600 font-bold">{message}</p>}
               </div>
             ))}
 
@@ -406,14 +431,13 @@ alert('Full in all the required field before you continue')
         </p>
       </div>
       </div>
-      { createPortal(<div>
-        <div className={`w-[90%] max-w-[800px] z-[10000] bg-white absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] p-5 font-bold border-[1px] border-cooperative-dark rounded-md shadow-2xl shadow-cooperative-dark ${blur ? 'block': 'hidden'}`}> 
-          <div className="flex justify-center pb-3">
-          <FaCheck />
-          </div>
-         Sign up successful. Check your email to continue with the registration.
-        </div>
-      </div>, document.body)}
+      {createPortal(<PopupMessage
+      isOpen={isOpen}
+      type={type}               
+     title={title}
+     message={message}
+      onClose={() => setOpen(false)}
+   />, document.body)}
     </div>
    
   );

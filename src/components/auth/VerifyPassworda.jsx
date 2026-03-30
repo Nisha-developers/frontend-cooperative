@@ -68,7 +68,7 @@ const handleVerify = async () => {
       setIsValid(true);
       
 
-       navigate('/reset-password', {
+       navigate('/adminreset-password45', {
         state: {resetToken } 
       });
     }
