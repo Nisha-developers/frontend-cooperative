@@ -344,6 +344,7 @@ const [open, setOpen] = useState(false)
                     <textarea
                       onChange={(e)=>setdescription(e.target.value)}
                       rows={5}
+                      value={description}
                       placeholder="Tell us how we can help you..."
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 resize-none rounded-lg"
                     />
