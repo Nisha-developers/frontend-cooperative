@@ -31,6 +31,7 @@ const [open, setOpen] = useState(false)
      setType('error');
      setTitle('Form submission Error');
      setMessage('Make sure that the form is filled properly and try again')
+      return; 
     }
     e.preventDefault();
     console.log(data)
@@ -278,6 +279,7 @@ const [open, setOpen] = useState(false)
                         type="text"
                         placeholder="e.g. Emeka"
                         className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
+                        value={firstName}
                         onChange={(e)=>setFirstName(e.target.value)}
                       />
                     </div>
@@ -285,6 +287,7 @@ const [open, setOpen] = useState(false)
                       <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Last Name</label>
                       <input
                       onChange={(e)=>setLastName(e.target.value)}
+                      value={lastName}
                         type="text"
                         placeholder="e.g. Adeyemi"
                         className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
@@ -299,6 +302,7 @@ const [open, setOpen] = useState(false)
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem] ">Email Address</label>
                     <input
                     onChange={(e)=>setEmail(e.target.value)}
+                    value={email}
                       type="email"
                       placeholder="you@example.com"
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
@@ -311,6 +315,7 @@ const [open, setOpen] = useState(false)
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Phone Number</label>
                     <input
                       onChange={(e)=>setPhone(e.target.value)}
+                      value={phone}
                       type="tel"
                       placeholder="+234 800 000 0000"
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
@@ -321,7 +326,7 @@ const [open, setOpen] = useState(false)
                 <StaggerItem variant={fadeUp} duration={0.45}>
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Subject</label>
-                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none rounded-lg"  onChange={(e)=>setSubject(e.target.value)}>
+                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none rounded-lg" value={subject}  onChange={(e)=>setSubject(e.target.value)}>
                       <option value="" className="bg-cooperative-dark">Select a subject</option>
                       <option value="housing" className="bg-cooperative-dark">Housing Inquiry</option>
                       <option value="purchase" className="bg-cooperative-dark">Property Purchase</option>
