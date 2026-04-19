@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { CiMenuBurger, CiLogout, CiCircleRemove} from "react-icons/ci";
 import { FaNairaSign } from 'react-icons/fa6';
+import { useAuth } from '../../context/AuthContext';
 import { 
   RiHomeOfficeLine, 
   RiShoppingBagLine,
@@ -12,6 +13,7 @@ import {
   RiWallet3Line,
   RiDashboardLine
 } from "react-icons/ri";
+import useWalletStore from '../../hooks/useWallet';
 
 
 const housingServices = [
@@ -38,8 +40,17 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
     }
   };
   const userValue = componentUserValue.user;
- 
- 
+ const gettransaction = useWalletStore((state) => state.getTransactions);
+ const transactions = useWalletStore((state) => state.transactions);
+ const {getAccessToken} = useAuth();
+useEffect(() => {
+   const token = getAccessToken();
+   gettransaction(token);
+}, []);
+
+const balance = transactions?.transactions
+  ?.filter((val) => val.remark === 'balance_funding')
+  ?.reduce((total, val) => total + (Number(val.amount) || 0), 0) || 0;
 
   const NavItem = ({ icon: Icon, label, link }) => {
     // Determine if we should show the label
@@ -130,7 +141,7 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
       <div className={`text-cooperative-dark  font-bold py-4 px-4  flex-col gap-2 ${iscollapse ? 'flex': 'hidden'}`}>
         <div>@{userValue.username}</div>
         <div>{userValue.membership_id}</div>
-        <div>Balance: <span><FaNairaSign className='inline' /> 0.00</span></div>
+        <div>Balance: <span>₦{balance.toFixed(2).toLocaleString() ?? 0}</span></div>
         </div>
 
       {/* Navigation */}

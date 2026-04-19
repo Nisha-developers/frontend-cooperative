@@ -248,7 +248,7 @@ const addSavings = () =>{
   const transactionHistory = useMemo(() => {
     return getcreditTrans.map((tx) => ({
       id: tx.uid,
-      type: tx.remark === 'credit_thrift_cooperative' ? 'Thrift Deposit' : tx.remark,
+      type: tx.type === 'CREDIT' ? 'Deposit' : 'Withdraw',
       amount: tx.type === 'DEBIT' ? -Number(tx.amount) : Number(tx.amount),
       date: new Date(tx.created_on).toLocaleDateString('en-NG', {
         year: 'numeric',
@@ -529,7 +529,7 @@ const addSavings = () =>{
                       <td className="px-6 py-4 text-cooperative-dark/70 font-mono text-xs">
                         {transaction.reference}
                       </td>
-                      <td className="px-6 py-4 text-cooperative-dark/70">{transaction.method}</td>
+                      <td className="px-6 py-4 text-cooperative-dark/70">{transaction.method.toUpperCase()}</td>
                       <td className={`px-6 py-4 font-semibold ${
                         transaction.amount < 0 ? 'text-red-600' : 'text-cooperative-dark'
                       }`}>
