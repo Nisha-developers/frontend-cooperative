@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   User,
   Mail,
@@ -10,31 +10,106 @@ import {
   Download,
   CheckCircle
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { RiAccountCircleFill, RiAccountPinBoxFill } from 'react-icons/ri';
+import { createPortal } from 'react-dom';
+import PopupMessage from '../../components/ui/PopupMessage';
+
 
 const Settings = () => {
   const [saved, setSaved] = useState(false);
-
+  const {user, getAccessToken} = useAuth();
+  const [editMode, setEditMode] = useState(true)
+  const [message, setMessage] = useState('');
+  const [title, setTitle] = useState('');
+  const [type, setType] = useState('')
+  const [open, setOpen] = useState('');
   const [profile, setProfile] = useState({
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+234 801 234 5678',
-    address: '12, Lekki Phase 1, Lagos, Nigeria',
-    dateOfBirth: '1990-05-15',
-    occupation: 'Software Engineer',
-    nextOfKin: 'Jane Doe',
-    nextOfKinPhone: '+234 802 345 6789',
-    bio: 'Passionate about cooperative development and community growth.',
-    joinedDate: 'January 2023'
+    fullName: user?.user?.full_name,
+    email: user?.user?.email,
+    phone: user?.profile?.phone_number,
+    address: user?.profile?.address,
+    userName: user?.user?.username,
+    nextOfKin: user.next?? 'Nil',
+    nextOfKinPhone: user.next ?? 'Nil',
+    accountName: user?.profile?.account_name,
+    accountNumber: user?.profile?.account_number,
+    bankName: user?.profile?.bank_name
   });
+ 
+
+
+
+
+
+
+   
+
 
   const handleProfileChange = (field, value) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
+  const handleEditForm = () =>{
+    console.log('The form is edited')
+    setEditMode(false);
+    setOpen(true);
+    setTitle('Editing Enabled');
+    setMessage('You can make changes to your information. Make sure you save the changes when you are done');
+    setType('success');
 
-  const handleSave = () => {
-    setSaved(true);
+  }
+
+  const handleSave =  async() => {
+     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
-  };
+    const token = getAccessToken();
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        full_name: profile.fullName,
+        email: profile.email,
+        phone_number: profile.phone,
+        address: profile.address,
+        account_name: profile.accountName,
+        account_number: profile.accountNumber,
+        bank_name: profile.bankName
+      })
+})
+
+    const data = await res.json();
+    console.log(data);
+
+    if (!res.ok) {
+      throw new Error(data?.message || 'Update failed');
+    }
+
+    setSaved(true);
+    setEditMode(true);
+
+    setTitle('Success');
+    setMessage('Profile updated successfully');
+    setType('success');
+    setOpen(true);
+
+    setTimeout(() => setSaved(false), 2500);
+
+  } catch (err) {
+    console.error(err);
+
+    setTitle('Error');
+    setMessage(err.message || 'Something went wrong');
+    setType('error');
+    setOpen(true);
+  }
+  
+
+};
+   
 
   return (
     <div className="space-y-8">
@@ -45,10 +120,6 @@ const Settings = () => {
           <p className="text-cooperative-dark/70 mt-2">Manage your personal information</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border border-cooperative-teal text-cooperative-teal rounded-lg hover:bg-cooperative-teal/5 transition-colors font-medium flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            Export Data
-          </button>
           <button
             onClick={handleSave}
             className={`px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2 ${
@@ -59,6 +130,11 @@ const Settings = () => {
           >
             {saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {saved ? 'Saved!' : 'Save Changes'}
+          </button>
+          <button
+            onClick={handleEditForm}
+            className='px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2 border-green-600 border-[1px] duration-300 hover:bg-green-600 hover:text-white'>
+             Edit Profile
           </button>
         </div>
       </div>
@@ -79,6 +155,7 @@ const Settings = () => {
                   type="text"
                   value={profile.fullName}
                   onChange={(e) => handleProfileChange('fullName', e.target.value)}
+                  readOnly ={editMode}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
                 />
               </div>
@@ -90,6 +167,7 @@ const Settings = () => {
                 <input
                   type="email"
                   value={profile.email}
+                  readOnly ={editMode}
                   onChange={(e) => handleProfileChange('email', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
                 />
@@ -101,6 +179,7 @@ const Settings = () => {
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
                 <input
                   type="tel"
+                  readOnly ={editMode}
                   value={profile.phone}
                   onChange={(e) => handleProfileChange('phone', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
@@ -108,13 +187,14 @@ const Settings = () => {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Date of Birth</label>
+              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Username</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
+                <User  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
                 <input
-                  type="date"
-                  value={profile.dateOfBirth}
-                  onChange={(e) => handleProfileChange('dateOfBirth', e.target.value)}
+                  type="text"
+                  readOnly ={editMode}
+                  value={profile.userName}
+                  onChange={(e) => handleProfileChange('userName', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
                 />
               </div>
@@ -125,29 +205,12 @@ const Settings = () => {
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
                 <input
                   type="text"
+                  readOnly ={editMode}
                   value={profile.address}
                   onChange={(e) => handleProfileChange('address', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
                 />
               </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Occupation</label>
-              <input
-                type="text"
-                value={profile.occupation}
-                onChange={(e) => handleProfileChange('occupation', e.target.value)}
-                className="w-full px-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Bio</label>
-              <textarea
-                rows="3"
-                value={profile.bio}
-                onChange={(e) => handleProfileChange('bio', e.target.value)}
-                className="w-full px-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
-              />
             </div>
           </div>
         </div>
@@ -160,6 +223,7 @@ const Settings = () => {
               <label className="text-sm font-medium text-cooperative-dark mb-2 block">Full Name</label>
               <input
                 type="text"
+                disabled
                 value={profile.nextOfKin}
                 onChange={(e) => handleProfileChange('nextOfKin', e.target.value)}
                 className="w-full px-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
@@ -169,6 +233,7 @@ const Settings = () => {
               <label className="text-sm font-medium text-cooperative-dark mb-2 block">Phone Number</label>
               <input
                 type="tel"
+                disabled
                 value={profile.nextOfKinPhone}
                 onChange={(e) => handleProfileChange('nextOfKinPhone', e.target.value)}
                 className="w-full px-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
@@ -182,32 +247,52 @@ const Settings = () => {
           <h3 className="text-lg font-semibold text-cooperative-dark mb-4">Account Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Member Since</label>
+              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Account Name</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
+                <RiAccountPinBoxFill className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
                 <input
                   type="text"
-                  value={profile.joinedDate}
-                  disabled
+                  readOnly ={editMode}
+                  value={profile.accountName}
+                  onChange={(e) => handleProfileChange('accountName', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl bg-cooperative-cream/50 text-cooperative-dark/70"
                 />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Member ID</label>
+              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Account Number</label>
               <div className="relative">
-                <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
+                <RiAccountCircleFill className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
                 <input
                   type="text"
-                  value="COOP-2023-0842"
-                  disabled
+                  readOnly ={editMode}
+                  value={profile.accountNumber}
+                  onChange={(e) => handleProfileChange('accountNumber', e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl bg-cooperative-cream/50 text-cooperative-dark/70"
                 />
               </div>
+              
+            </div>
+            <div>
+              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Bank Name</label>
+              <div className="relative">
+                <RiAccountCircleFill className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
+                <input
+                  type="text"
+                  readOnly ={editMode}
+                  value={profile.bankName}
+                  onChange={(e) => handleProfileChange('bankName', e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl bg-cooperative-cream/50 text-cooperative-dark/70"
+                />
+              </div>
+              
             </div>
           </div>
         </div>
       </div>
+      {
+        createPortal(<PopupMessage message={message} title={title} type={type} isOpen={open} onClose={()=>setOpen(false)}/>,document.body)
+      }
     </div>
   );
 };

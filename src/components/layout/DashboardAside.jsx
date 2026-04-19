@@ -1,5 +1,6 @@
 import React from 'react';
 import { CiMenuBurger, CiLogout, CiCircleRemove} from "react-icons/ci";
+import { FaNairaSign } from 'react-icons/fa6';
 import { 
   RiHomeOfficeLine, 
   RiShoppingBagLine,
@@ -129,6 +130,7 @@ const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMe
       <div className={`text-cooperative-dark  font-bold py-4 px-4  flex-col gap-2 ${iscollapse ? 'flex': 'hidden'}`}>
         <div>@{userValue.username}</div>
         <div>{userValue.membership_id}</div>
+        <div>Balance: <span><FaNairaSign className='inline' /> 0.00</span></div>
         </div>
 
       {/* Navigation */}

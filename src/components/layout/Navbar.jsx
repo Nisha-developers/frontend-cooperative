@@ -27,6 +27,7 @@ const cooperativeItems = [
 const apartmentItems = [
   { label: "Buy Apartment", href: "/buy" },
   { label: "Rent Apartment", href: "/rent" },
+  { label: "Land", href: "/land" },
 ];
 
 const Navbar = ({bgvar, setbgvar}) => {

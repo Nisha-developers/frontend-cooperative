@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Spinner from "../../components/ui/Spinner";
 import { Navigate } from "react-router-dom";
@@ -17,7 +17,25 @@ export default function Login() {
   const [error, seterror] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const {login}  = useAuth();
- 
+ const location = useLocation()
+const navigateTo = () =>{
+  let direction = ''
+  switch(location.state){
+    case 'rememberBuy':
+      direction = '/dashboard#buy'
+      break;
+    case 'rememberRent':
+       direction = '/dashboard#rent'
+      break;
+    case 'rememberLand':
+      direction = '/dashboard#land'
+      break
+    default:
+      direction = '/dashboard'
+  }
+  sessionStorage.setItem('place', direction);
+  return direction
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,7 +83,7 @@ export default function Login() {
       login(userDetails, data.access)
         setTimeout(()=>{
           setLoading(false);
-          navigete('/dashboard');
+        navigete(navigateTo());
         }, 4000)
       }
     } catch (error) {

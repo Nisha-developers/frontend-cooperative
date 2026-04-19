@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
+import { SaleProvider } from '@/context/SaleContext';
+
 
 // Public
 import LandingPage from '@/pages/public/LandingPage'
@@ -29,6 +31,7 @@ import AdminRoute from '@/components/auth/AdminRoute'
 import CodeSend from './pages/auth/CodeSend'
 import BethelAgriculturalBody from '@/pages/public/BethelAgriculturalBody'
 import RentApartment from './components/landing/RentApartment'
+import LandSection from './components/landing/LandSection';
 import BuyApartment from './components/landing/BuyApartment'
 import DashboardLayout from './components/layout/DashboardLayout'
 import ForgetPassword from './pages/auth/ForgetPassword'
@@ -40,16 +43,19 @@ import CodeSenda from './components/auth/codeSenda'
 import ForgetPassworda from './components/auth/ForgetPassworda'
 import VerifyPassworda from './components/auth/VerifyPassworda'
 import ResetPassworda from './components/auth/ResetPassworda'
+
 function App() {
  
   return (
     <AuthProvider>
       <NotificationProvider>
+        <SaleProvider>
         <Routes>
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/agric" element={<BethelAgriculturalBody />} />
         <Route path="/rent" element={<RentApartment />} />
+         <Route path="/land" element={<LandSection/>} />
         <Route path="/buy" element={<BuyApartment />} />
 
           {/* Auth */}
@@ -87,6 +93,7 @@ function App() {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </SaleProvider>
       </NotificationProvider>
     </AuthProvider>
   )

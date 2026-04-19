@@ -3,6 +3,8 @@ import imagesHero from '../../assets/images/WhatsApp_Image_2026-02-25_at_6.57.20
 
 import MarqueeTicker from './MarqueeTicker';
 import Navbar from '../layout/Navbar';
+import { createPortal } from 'react-dom';
+import { FaWhatsapp } from 'react-icons/fa';
 
 const HeroSection = () => {
  
@@ -61,7 +63,9 @@ const HeroSection = () => {
       <div className="w-full ">
         <MarqueeTicker />
       </div>
-
+{createPortal(<div className='h-10 w-10 fixed bg-green-900 right-7 bottom-7 rounded-full flex items-center justify-center cursor-pointer'>
+  <a href="https://wa.me/2347051598561"><FaWhatsapp size={25} className='text-white'/></a>
+</div>, document.body)}
     </div>
   )
 }

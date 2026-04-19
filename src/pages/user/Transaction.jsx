@@ -1,644 +1,418 @@
-import React, { useState } from 'react';
-import { 
-  History,
-  Search,
-  Filter,
-  Download,
-  Calendar,
-  DollarSign,
-  CreditCard,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Wallet,
-  Landmark,
-  PiggyBank,
-  Home,
-  Sprout,
-  HandCoins,
-  Receipt,
-  FileText,
-  Eye,
-  ChevronDown,
-  ChevronUp,
-  TrendingUp,
-  TrendingDown,
-  Printer,
-  Share2,
-  Copy,
-  BarChart3
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  Search, Filter, ArrowUpRight, ArrowDownRight,
+  ChevronDown, ChevronUp, BarChart3, CheckCircle, XCircle,
+  Clock, Copy, FileText, Calendar
 } from 'lucide-react';
+import useWalletStore from '../../hooks/useWallet';
+import { useAuth } from '../../context/AuthContext';
 
-const Transaction = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-
-  // All transactions across all cooperative services
-  const allTransactions = [
-    // Rent Apartment Transactions
-    {
-      id: 1,
-      service: 'Rent Apartment',
-      serviceIcon: Home,
-      type: 'Rent Payment',
-      category: 'payment',
-      amount: 22500,
-      date: '2024-03-15',
-      time: '10:30 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'RENT-2024-0315-001',
-      description: '3 months rent - Sunset Villa',
-      property: 'Sunset Villa',
-      location: 'Lekki Phase 1, Lagos',
-      duration: '90 days',
-      dailyRate: 250,
-      receiptUrl: '#'
-    },
-    {
-      id: 2,
-      service: 'Rent Apartment',
-      serviceIcon: Home,
-      type: 'Rent Payment',
-      category: 'payment',
-      amount: 10500,
-      date: '2024-02-10',
-      time: '02:15 PM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'RENT-2024-0210-001',
-      description: 'Monthly rent - Ocean Breeze Tower',
-      property: 'Ocean Breeze Tower',
-      location: 'Victoria Island, Lagos',
-      duration: '30 days',
-      dailyRate: 350,
-      receiptUrl: '#'
-    },
-    
-    // Buy Apartment Transactions
-    {
-      id: 3,
-      service: 'Buy Apartment',
-      serviceIcon: Home,
-      type: 'Full Purchase',
-      category: 'purchase',
-      amount: 427500,
-      date: '2024-03-10',
-      time: '11:45 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'PUR-2024-0310-001',
-      description: 'Full payment - Sunset Luxury Villa',
-      property: 'Sunset Luxury Villa',
-      location: 'Lekki Phase 1, Lagos',
-      discount: '5% cash discount',
-      receiptUrl: '#'
-    },
-    {
-      id: 4,
-      service: 'Buy Apartment',
-      serviceIcon: Home,
-      type: 'Installment Payment',
-      category: 'loan_payment',
-      amount: 7500,
-      date: '2024-03-01',
-      time: '09:20 AM',
-      status: 'completed',
-      method: 'Direct Debit',
-      reference: 'INS-2024-0301-001',
-      description: 'Monthly installment - Green Garden',
-      property: 'Green Garden Residence',
-      location: 'Ikeja, Lagos',
-      remainingBalance: 235500,
-      receiptUrl: '#'
-    },
-    {
-      id: 5,
-      service: 'Buy Apartment',
-      serviceIcon: Home,
-      type: 'Savings Contribution',
-      category: 'deposit',
-      amount: 2500,
-      date: '2024-02-15',
-      time: '03:30 PM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'SAV-2024-0215-001',
-      description: 'Cooperative savings - Oceanview Penthouse',
-      property: 'Oceanview Penthouse',
-      location: 'Victoria Island, Lagos',
-      groupMembers: 12,
-      receiptUrl: '#'
-    },
-
-    // Housing Cooperative Transactions
-    {
-      id: 6,
-      service: 'Housing Cooperative',
-      serviceIcon: Home,
-      type: 'Savings Deposit',
-      category: 'deposit',
-      amount: 2000,
-      date: '2024-03-15',
-      time: '10:00 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'COOP-2024-0315-001',
-      description: 'Monthly cooperative savings',
-      balance: 47632,
-      receiptUrl: '#'
-    },
-    {
-      id: 7,
-      service: 'Housing Cooperative',
-      serviceIcon: Home,
-      type: 'Interest Credited',
-      category: 'interest',
-      amount: 458,
-      date: '2024-03-01',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Credit',
-      reference: 'INT-2024-03-001',
-      description: 'Monthly interest on savings',
-      interestRate: 4.5,
-      balance: 43800,
-      receiptUrl: '#'
-    },
-    {
-      id: 8,
-      service: 'Housing Cooperative',
-      serviceIcon: Home,
-      type: 'Dividend Payout',
-      category: 'dividend',
-      amount: 625,
-      date: '2024-02-28',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Credit',
-      reference: 'DIV-2024-02-001',
-      description: 'Quarterly dividend payout',
-      dividendRate: 6.8,
-      balance: 43342,
-      receiptUrl: '#'
-    },
-
-    // Agricultural Cooperative Transactions
-    {
-      id: 9,
-      service: 'Agricultural Cooperative',
-      serviceIcon: Sprout,
-      type: 'Farm Savings',
-      category: 'deposit',
-      amount: 2500,
-      date: '2024-03-15',
-      time: '10:30 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'AGRI-2024-0315-001',
-      description: 'Monthly farm savings contribution',
-      season: 'Dry Season 2024',
-      balance: 71240,
-      receiptUrl: '#'
-    },
-    {
-      id: 10,
-      service: 'Agricultural Cooperative',
-      serviceIcon: Sprout,
-      type: 'Dividend Payout',
-      category: 'dividend',
-      amount: 386,
-      date: '2024-03-01',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Credit',
-      reference: 'DIV-2024-03-001',
-      description: 'Monthly agricultural dividend',
-      dividendRate: 7.0,
-      season: 'Dry Season',
-      balance: 66200,
-      receiptUrl: '#'
-    },
-    {
-      id: 11,
-      service: 'Agricultural Cooperative',
-      serviceIcon: Sprout,
-      type: 'Harvest Proceeds',
-      category: 'income',
-      amount: 1250,
-      date: '2024-02-28',
-      time: '03:00 PM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'HRV-2024-02-001',
-      description: 'Share of harvest proceeds',
-      crop: 'Maize & Rice',
-      yield: '8.2 tons/hectare',
-      balance: 65814,
-      receiptUrl: '#'
-    },
-
-    // Credit & Thrift Transactions
-    {
-      id: 12,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Thrift Savings',
-      category: 'deposit',
-      amount: 5000,
-      date: '2024-03-15',
-      time: '09:15 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'CT-2024-0315-001',
-      description: 'Monthly thrift contribution',
-      balance: 82425,
-      receiptUrl: '#'
-    },
-    {
-      id: 13,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Maintenance Fee',
-      category: 'deductible',
-      amount: -250,
-      date: '2024-03-01',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Deduct',
-      reference: 'FEE-2024-03-001',
-      description: 'Monthly account maintenance fee',
-      balance: 73500,
-      receiptUrl: '#'
-    },
-    {
-      id: 14,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Insurance Premium',
-      category: 'deductible',
-      amount: -500,
-      date: '2024-03-01',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Deduct',
-      reference: 'INS-2024-03-001',
-      description: 'Monthly insurance premium',
-      balance: 73750,
-      receiptUrl: '#'
-    },
-    {
-      id: 15,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Loan Disbursement',
-      category: 'loan',
-      amount: 25000,
-      date: '2024-02-20',
-      time: '11:30 AM',
-      status: 'completed',
-      method: 'Bank Transfer',
-      reference: 'LN-2024-002-001',
-      description: 'Thrift loan disbursement',
-      loanType: 'Thrift Loan',
-      interestRate: 8.5,
-      duration: '12 months',
-      balance: 74250,
-      receiptUrl: '#'
-    },
-    {
-      id: 16,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Loan Payment',
-      category: 'loan_payment',
-      amount: -2271,
-      date: '2024-02-15',
-      time: '10:00 AM',
-      status: 'completed',
-      method: 'Auto Debit',
-      reference: 'LNP-2024-02-001',
-      description: 'Monthly loan repayment',
-      remainingBalance: 18187,
-      balance: 44250,
-      receiptUrl: '#'
-    },
-    {
-      id: 17,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Interest Credited',
-      category: 'interest',
-      amount: 340,
-      date: '2024-02-01',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Credit',
-      reference: 'INT-2024-02-001',
-      description: 'Monthly interest on savings',
-      interestRate: 5.2,
-      balance: 46771,
-      receiptUrl: '#'
-    },
-    {
-      id: 18,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Late Payment Fee',
-      category: 'deductible',
-      amount: -1000,
-      date: '2024-01-20',
-      time: '12:00 AM',
-      status: 'completed',
-      method: 'Auto Deduct',
-      reference: 'LPF-2024-01-001',
-      description: 'Late payment penalty',
-      balance: 46681,
-      receiptUrl: '#'
-    },
-
-    // Pending/Processing Transactions
-    {
-      id: 19,
-      service: 'Buy Apartment',
-      serviceIcon: Home,
-      type: 'Withdrawal Request',
-      category: 'withdrawal',
-      amount: 5000,
-      date: '2024-03-18',
-      time: '02:30 PM',
-      status: 'pending',
-      method: 'Bank Transfer',
-      reference: 'WD-2024-0318-001',
-      description: 'Savings withdrawal request',
-      balance: 47632,
-      receiptUrl: '#'
-    },
-    {
-      id: 20,
-      service: 'Credit & Thrift',
-      serviceIcon: HandCoins,
-      type: 'Loan Request',
-      category: 'loan',
-      amount: 35000,
-      date: '2024-03-17',
-      time: '11:00 AM',
-      status: 'processing',
-      method: 'Pending Approval',
-      reference: 'LNR-2024-0317-001',
-      description: 'Business loan application',
-      loanType: 'Business Investment',
-      duration: '24 months',
-      receiptUrl: '#'
-    }
-  ];
-
-  // Statistics
-  const totalTransactions = allTransactions.length;
-  const totalIncome = allTransactions
-    .filter(t => t.amount > 0 && t.status === 'completed')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = allTransactions
-    .filter(t => t.amount < 0 && t.status === 'completed')
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const pendingTotal = allTransactions
-    .filter(t => t.status !== 'completed')
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const netBalance = totalIncome - totalExpenses;
-
-  // Get unique services for filter
-  const services = [...new Set(allTransactions.map(t => t.service))];
-
-  // Filter transactions
-  const getFilteredTransactions = () => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
-    const ninetyDaysAgo = new Date(now.setDate(now.getDate() - 90));
-    const oneYearAgo = new Date(now.setDate(now.getDate() - 365));
-    
-    let filtered = [...allTransactions];
-    
-    // Filter by period
-    if (selectedPeriod === '30days') {
-      filtered = filtered.filter(t => new Date(t.date) >= thirtyDaysAgo);
-    } else if (selectedPeriod === '90days') {
-      filtered = filtered.filter(t => new Date(t.date) >= ninetyDaysAgo);
-    } else if (selectedPeriod === 'year') {
-      filtered = filtered.filter(t => new Date(t.date) >= oneYearAgo);
-    }
-    
-    // Filter by type
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(t => t.category === selectedType);
-    }
-    
-    // Filter by status
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(t => t.status === selectedStatus);
-    }
-    
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(t => 
-        t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.property && t.property.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    }
-    
-    // Sort by date (newest first)
-    return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+/* ─── Remark map — uses your real remark keys ──────────────── */
+function getRemark(val) {
+  const map = {
+    repay_housing_installment: 'Housing Repayment',
+    repay_credit_thrift:       'Loan Repayment',
+    balance_funding:           'Wallet Top-up',
+    credit_thrift_cooperative: 'Cooperative Savings',
+    housing_cooperative:       'Housing Savings',
   };
+  return map[val] ?? 'Unspecified Transaction';
+}
 
-  const filteredTransactions = getFilteredTransactions();
-  
-  // Group transactions by month
-  const groupedTransactions = filteredTransactions.reduce((groups, transaction) => {
-    const date = new Date(transaction.date);
-    const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    if (!groups[monthYear]) {
-      groups[monthYear] = [];
-    }
-    groups[monthYear].push(transaction);
-    return groups;
+/* ─── Date helpers ─────────────────────────────────────────── */
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+
+function ordSuffix(d) {
+  if (d % 10 === 1 && d !== 11) return 'st';
+  if (d % 10 === 2 && d !== 12) return 'nd';
+  if (d % 10 === 3 && d !== 13) return 'rd';
+  return 'th';
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d   = new Date(iso);
+  const day = d.getDate();
+  return `${day}${ordSuffix(day)} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-GB', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function fmtAmount(raw) {
+  const num = parseFloat(raw ?? 0);
+  return `₦${Math.abs(num).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+}
+
+/* ─── Group list by month string ──────────────────────────── */
+function groupByMonth(list) {
+  return list.reduce((acc, t) => {
+    const d   = new Date(t.created_on);
+    const key = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    (acc[key] = acc[key] || []).push(t);
+    return acc;
   }, {});
+}
 
-  const formatAmount = (amount) => {
-    const isNegative = amount < 0;
-    return `${isNegative ? '-' : '+'}$${Math.abs(amount).toLocaleString()}`;
-  };
+/* ─── Filter helper ────────────────────────────────────────── */
+function applyFilters(list, { period, type, query }) {
+  let out = [...list];
+  if (period !== 'all') {
+    const days = period === '30days' ? 30 : period === '90days' ? 90 : 365;
+    const ago  = new Date(); ago.setDate(ago.getDate() - days);
+    out = out.filter(t => new Date(t.created_on) >= ago);
+  }
+  if (type !== 'all') out = out.filter(t => t.remark === type);
+  if (query) {
+    const q = query.toLowerCase();
+    out = out.filter(t =>
+      getRemark(t.remark).toLowerCase().includes(q) ||
+      (t.reference  ?? '').toLowerCase().includes(q) ||
+      (t.created_by ?? '').toLowerCase().includes(q)
+    );
+  }
+  return out.sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
+}
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'processing': return 'bg-blue-100 text-blue-700';
-      case 'failed': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+/* ─── Design tokens per variant ───────────────────────────── */
+const THEME = {
+  confirmed: {
+    borderL:    'border-l-[#2E7D32]',
+    iconBg:     'bg-[#2E7D32]/10',
+    iconColor:  'text-[#2E7D32]',
+    amtColor:   'text-[#2E7D32]',
+    badgeBg:    'bg-[#2E7D32]/10 text-[#2E7D32]',
+    footerBg:   'bg-[#2E7D32]/5 border-[#2E7D32]/10',
+    hdrBg:      'bg-[#2E7D32]/8 border-[#2E7D32]/20',
+    hdrText:    'text-[#2E7D32]',
+    dot:        'bg-[#2E7D32]',
+    emptyBdr:   'border-[#2E7D32]/20 bg-[#2E7D32]/5',
+    emptyText:  'text-[#2E7D32]/40',
+    Icon:       CheckCircle,
+    label:      'Confirmed Transactions',
+    actionWord: 'Confirmed',
+  },
+  rejected: {
+    borderL:    'border-l-red-500',
+    iconBg:     'bg-red-50',
+    iconColor:  'text-red-500',
+    amtColor:   'text-red-500',
+    badgeBg:    'bg-red-100 text-red-600',
+    footerBg:   'bg-red-50/60 border-red-100',
+    hdrBg:      'bg-red-50 border-red-200',
+    hdrText:    'text-red-600',
+    dot:        'bg-red-500',
+    emptyBdr:   'border-red-200 bg-red-50',
+    emptyText:  'text-red-400',
+    Icon:       XCircle,
+    label:      'Declined Transactions',
+    actionWord: 'Declined',
+  },
+  pending: {
+    borderL:    'border-l-[#F57C00]',
+    iconBg:     'bg-[#FDF6EC]',
+    iconColor:  'text-[#F57C00]',
+    amtColor:   'text-[#F57C00]',
+    badgeBg:    'bg-[#F57C00]/10 text-[#F57C00]',
+    footerBg:   'bg-[#FDF6EC] border-[#F57C00]/15',
+    hdrBg:      'bg-[#FDF6EC] border-[#F57C00]/30',
+    hdrText:    'text-[#F57C00]',
+    dot:        'bg-[#F57C00]',
+    emptyBdr:   'border-[#F57C00]/25 bg-[#FDF6EC]',
+    emptyText:  'text-[#F57C00]/40',
+    Icon:       Clock,
+    label:      'Pending Transactions',
+    actionWord: null,
+  },
+};
 
-  const getCategoryColor = (category) => {
-    switch(category) {
-      case 'deposit': return 'bg-cooperative-teal/10 text-cooperative-teal';
-      case 'payment': return 'bg-cooperative-orange/10 text-cooperative-orange';
-      case 'deductible': return 'bg-red-100 text-red-600';
-      case 'loan': return 'bg-blue-100 text-blue-700';
-      case 'loan_payment': return 'bg-purple-100 text-purple-700';
-      case 'interest': return 'bg-green-100 text-green-700';
-      case 'dividend': return 'bg-emerald-100 text-emerald-700';
-      case 'income': return 'bg-teal-100 text-teal-700';
-      case 'withdrawal': return 'bg-orange-100 text-orange-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+/* ─── Section header ───────────────────────────────────────── */
+const SectionHeader = ({ variant, count }) => {
+  const th = THEME[variant];
+  return (
+    <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border sticky top-0 z-10 ${th.hdrBg}`}>
+      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${th.dot}`} />
+      <span className={`font-extrabold text-sm uppercase tracking-wider ${th.hdrText}`}>
+        {th.label}
+      </span>
+      <span className={`ml-auto text-xs font-bold px-2.5 py-0.5 rounded-full ${th.badgeBg}`}>
+        {count}
+      </span>
+    </div>
+  );
+};
 
-  const getServiceIcon = (service) => {
-    switch(service) {
-      case 'Rent Apartment': return Home;
-      case 'Buy Apartment': return Home;
-      case 'Housing Cooperative': return Home;
-      case 'Agricultural Cooperative': return Sprout;
-      case 'Credit & Thrift': return HandCoins;
-      default: return Wallet;
-    }
+/* ─── Empty state ──────────────────────────────────────────── */
+const EmptyState = ({ variant }) => {
+  const th = THEME[variant];
+  return (
+    <div className={`flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed ${th.emptyBdr}`}>
+      <FileText className={`w-9 h-9 mb-2 ${th.emptyText}`} />
+      <p className="text-sm font-medium text-[#003000]/40">No {th.label.toLowerCase()} yet</p>
+    </div>
+  );
+};
+
+/* ─── Transaction card ─────────────────────────────────────── */
+const TransactionCard = ({ transaction, variant, onClick }) => {
+  const [copied, setCopied] = useState(false);
+  const th = THEME[variant];
+  const isCredit = transaction.type === 'CREDIT';
+
+  const copyRef = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(transaction.reference ?? '');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-cooperative-dark">Transaction History</h1>
-          <p className="text-cooperative-dark/70 mt-2">Track all your financial activities across cooperative services</p>
+    <div
+      onClick={onClick}
+      className={`
+        bg-white rounded-2xl border border-gray-100 border-l-4 ${th.borderL}
+        shadow-sm hover:shadow-md active:scale-[0.995] transition-all duration-150
+        cursor-pointer overflow-hidden
+      `}
+    >
+      {/* ── Body ── */}
+      <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
+
+        {/* Left: icon + details */}
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          {/* Icon */}
+          <div className={`flex-shrink-0 w-10 h-10 rounded-xl ${th.iconBg} flex items-center justify-center`}>
+            {isCredit
+              ? <ArrowUpRight  className={`w-5 h-5 ${th.iconColor}`} />
+              : <ArrowDownRight className={`w-5 h-5 ${th.iconColor}`} />}
+          </div>
+
+          {/* Text block */}
+          <div className="min-w-0 flex-1">
+            {/* type · source */}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              {transaction.type}
+              {transaction.source ? ` · ${transaction.source.replace(/_/g, ' ')}` : ''}
+            </span>
+
+            {/* remark */}
+            <p className="font-bold text-[#003000] text-sm sm:text-[15px] leading-snug mt-0.5">
+              {getRemark(transaction.remark)}
+            </p>
+
+            {/* created_by */}
+            <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+              By: <span className="text-[#003000]/55 font-medium">{transaction.created_by}</span>
+            </p>
+
+            {/* date + reference row */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-[11px] text-gray-400">
+              <Calendar className="w-3 h-3 flex-shrink-0" />
+              <span>{fmtDate(transaction.created_on)}</span>
+
+              {transaction.reference && (
+                <>
+                  <span className="hidden sm:inline text-gray-200">|</span>
+                  <span className="font-mono truncate max-w-[110px] sm:max-w-[200px]">
+                    {transaction.reference}
+                  </span>
+                
+                  <button
+                    onClick={copyRef}
+                    className={`flex-shrink-0 transition-colors hover:${th.iconColor}`}
+                    title="Copy reference"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </button>
+                  {copied && (
+                    <span className={`font-semibold ${th.amtColor}`}>Copied!</span>
+                  )}
+                </>
+              )}
+               
+            </div>
+             <div className='text-red-600 text-[14px] font-light pt-4'>
+                    {transaction.rejection_reason ? `Reason: ${transaction.rejection_reason}`: ''}
+                  </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 border border-cooperative-teal text-cooperative-teal rounded-lg hover:bg-cooperative-teal/5 transition-colors font-medium flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-          <button className="px-4 py-2 bg-cooperative-orange text-white rounded-lg hover:bg-cooperative-orange/90 transition-colors font-medium flex items-center gap-2">
-            <Printer className="w-4 h-4" />
-            Print Statement
-          </button>
+
+        {/* Right: amount + badge */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+          <p className={`text-base sm:text-lg font-extrabold tabular-nums ${th.amtColor}`}>
+            {fmtAmount(transaction.amount)}
+          </p>
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${th.badgeBg}`}>
+            <th.Icon className="w-3 h-3" />
+            {th.actionWord ?? 'Pending'}
+          </span>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-cooperative-teal to-cooperative-teal/80 text-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-white/80 text-sm">Total Transactions</span>
-              <div className="text-3xl font-bold mt-1">{totalTransactions}</div>
-            </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <History className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-cooperative-dark/5">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-cooperative-dark/60 text-sm">Total Income</span>
-              <div className="text-2xl font-bold text-green-600 mt-1">+${totalIncome.toLocaleString()}</div>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-cooperative-dark/5">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-cooperative-dark/60 text-sm">Total Expenses</span>
-              <div className="text-2xl font-bold text-red-600 mt-1">-${totalExpenses.toLocaleString()}</div>
-            </div>
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-              <TrendingDown className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-cooperative-dark/5">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-cooperative-dark/60 text-sm">Net Balance</span>
-              <div className={`text-2xl font-bold mt-1 ${netBalance >= 0 ? 'text-cooperative-teal' : 'text-red-600'}`}>
-                ${netBalance.toLocaleString()}
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-cooperative-orange/10 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-cooperative-orange" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pending Transactions Alert */}
-      {pendingTotal > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-medium text-yellow-800">Pending Transactions</h4>
-              <p className="text-sm text-yellow-700 mt-1">
-                You have ${pendingTotal.toLocaleString()} in pending/processing transactions that will be completed soon.
-              </p>
-            </div>
-          </div>
+      {/* ── Footer (confirmed_by / confirmed_at) ── */}
+      {(transaction.confirmed_by || transaction.confirmed_at) && (
+        <div className={`px-4 sm:px-5 py-2 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 ${th.footerBg}`}>
+          {transaction.confirmed_by && (
+            <p className="text-[11px] text-gray-400">
+              {th.actionWord} by{' '}
+              <span className="italic font-semibold text-gray-600">{transaction.confirmed_by}</span>
+            </p>
+          )}
+          {transaction.confirmed_at && (
+            <p className="text-[11px] text-gray-500 font-medium">{fmtDateTime(transaction.confirmed_at)}</p>
+          )}
         </div>
       )}
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cooperative-dark/40" />
+      {/* ── Pending footer note ── */}
+      {variant === 'pending' && (
+        <div className={`px-4 sm:px-5 py-2 border-t ${th.footerBg}`}>
+          <p className="text-[11px] text-[#F57C00] font-semibold italic">
+            Awaiting admin approval
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─── Month group ──────────────────────────────────────────── */
+const MonthGroup = ({ monthYear, transactions, variant, onSelect }) => (
+  <div className="space-y-3">
+    <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest pl-1">
+      {monthYear}
+    </p>
+    {transactions.map(t => (
+      <TransactionCard key={t.uid} transaction={t} variant={variant} onClick={() => onSelect?.(t)} />
+    ))}
+  </div>
+);
+
+/* ─── Stat card ────────────────────────────────────────────── */
+const StatCard = ({ label, count, total, accent }) => {
+  const styles = {
+    green: { bar: 'bg-[#2E7D32]', count: 'text-[#2E7D32]', bg: 'bg-[#2E7D32]/5' },
+    red:   { bar: 'bg-red-500',   count: 'text-red-500',   bg: 'bg-red-50'       },
+    amber: { bar: 'bg-[#F57C00]', count: 'text-[#F57C00]', bg: 'bg-[#FDF6EC]'   },
+    gray:  { bar: 'bg-gray-300',  count: 'text-gray-600',  bg: 'bg-gray-50'      },
+  }[accent];
+
+  return (
+    <div className={`relative overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-4 ${styles.bg}`}>
+      <div className={`absolute top-0 left-0 w-1 h-full ${styles.bar}`} />
+      <p className="text-[10px] uppercase tracking-widest font-extrabold text-gray-400 pl-2">{label}</p>
+      <p className={`text-2xl sm:text-3xl font-extrabold pl-2 mt-1 ${styles.count}`}>{count}</p>
+      {total !== undefined && (
+        <p className="text-[11px] text-gray-400 pl-2 mt-0.5">{fmtAmount(total)}</p>
+      )}
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════ */
+/*  Main component                                             */
+/* ═══════════════════════════════════════════════════════════ */
+const Transaction = () => {
+  const [selectedPeriod,      setSelectedPeriod]      = useState('all');
+  const [selectedType,        setSelectedType]        = useState('all');
+  const [searchQuery,         setSearchQuery]         = useState('');
+  const [showFilters,         setShowFilters]         = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+  const { getAccessToken } = useAuth();
+  const token           = getAccessToken();
+  const transactions    = useWalletStore(s => s.transactions);
+  const getTransactions = useWalletStore(s => s.getTransactions);
+
+  useEffect(() => { getTransactions(token); }, []);
+
+  /* ── Split on real status values from your API ── */
+  const allTxns = transactions?.transactions ?? [];
+
+  const confirmedTxns = useMemo(
+    () => allTxns.filter(t => t.status === 'CONFIRMED'), [allTxns]);
+  const rejectedTxns  = useMemo(
+    () => allTxns.filter(t => t.status === 'REJECTED'),  [allTxns]);
+  const pendingTxns   = useMemo(
+    () => allTxns.filter(t => t.status === 'PENDING'),   [allTxns]);
+
+  const filters = { period: selectedPeriod, type: selectedType, query: searchQuery };
+
+  const filteredConfirmed = applyFilters(confirmedTxns, filters);
+  const filteredRejected  = applyFilters(rejectedTxns,  filters);
+  const filteredPending   = applyFilters(pendingTxns,   filters);
+
+  const sumAmount = list => list.reduce((s, t) => s + parseFloat(t.amount ?? 0), 0);
+
+  return (
+    <div className="space-y-7 pb-16">
+
+      {/* ── Page header ── */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#003000] tracking-tight">
+          Transaction History
+        </h1>
+        <p className="text-sm text-[#003000]/50 mt-1">
+          Track all your financial activities across cooperative services
+        </p>
+      </div>
+
+      {/* ── Stats row ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Confirmed" count={confirmedTxns.length} total={sumAmount(confirmedTxns)} accent="green" />
+        <StatCard label="Declined"  count={rejectedTxns.length}  total={sumAmount(rejectedTxns)}  accent="red"   />
+        <StatCard label="Pending"   count={pendingTxns.length}   total={sumAmount(pendingTxns)}   accent="amber" />
+        <StatCard label="Total"     count={allTxns.length}                                         accent="gray"  />
+      </div>
+
+      {/* ── Search & filters ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by description, reference, property..."
+              placeholder="Search reference, remark, email…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl
+                focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/20 focus:border-[#2E7D32]/40 transition"
             />
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-3 border border-cooperative-dark/10 rounded-xl hover:bg-cooperative-cream transition-colors flex items-center gap-2"
-            >
-              <Filter className="w-5 h-5 text-cooperative-dark/60" />
-              Filters
-              {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            <button className="px-4 py-3 bg-cooperative-orange text-white rounded-xl hover:bg-cooperative-orange/90 transition-colors font-medium flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Summary
-            </button>
-          </div>
+
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5
+              border border-gray-200 rounded-xl text-sm text-[#003000]/70
+              hover:bg-[#FDF6EC] transition-colors font-semibold"
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+        
         </div>
 
-        {/* Advanced Filters */}
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-cooperative-dark/10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
             <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Time Period</label>
+              <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">
+                Time Period
+              </label>
               <select
                 value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full p-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
+                onChange={e => setSelectedPeriod(e.target.value)}
+                className="w-full p-2.5 text-sm border border-gray-200 rounded-xl
+                  focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/20 transition"
               >
                 <option value="all">All Time</option>
                 <option value="30days">Last 30 Days</option>
@@ -647,303 +421,57 @@ const Transaction = () => {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Transaction Type</label>
+              <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">
+                Remark / Type
+              </label>
               <select
                 value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full p-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
+                onChange={e => setSelectedType(e.target.value)}
+                className="w-full p-2.5 text-sm border border-gray-200 rounded-xl
+                  focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/20 transition"
               >
                 <option value="all">All Types</option>
-                <option value="deposit">Deposits & Savings</option>
-                <option value="payment">Payments</option>
-                <option value="loan">Loan Transactions</option>
-                <option value="loan_payment">Loan Repayments</option>
-                <option value="interest">Interest</option>
-                <option value="dividend">Dividends</option>
-                <option value="deductible">Fees & Deductibles</option>
-                <option value="income">Harvest & Income</option>
-                <option value="withdrawal">Withdrawals</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-cooperative-dark mb-2 block">Status</label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full p-3 border border-cooperative-dark/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cooperative-orange/20"
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
+                <option value="balance_funding">Wallet Top-up</option>
+                <option value="credit_thrift_cooperative">Cooperative Savings</option>
+                <option value="housing_cooperative">Housing Savings</option>
+                <option value="repay_housing_installment">Housing Repayment</option>
+                <option value="repay_credit_thrift">Loan Repayment</option>
               </select>
             </div>
           </div>
         )}
       </div>
 
-      {/* Transaction List */}
-      <div className="space-y-6">
-        {Object.entries(groupedTransactions).length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center shadow-lg">
-            <History className="w-16 h-16 text-cooperative-dark/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-cooperative-dark mb-2">No transactions found</h3>
-            <p className="text-cooperative-dark/60">Try adjusting your filters or search query</p>
-          </div>
-        ) : (
-          Object.entries(groupedTransactions).map(([monthYear, transactions]) => (
-            <div key={monthYear} className="space-y-3">
-              <h3 className="text-lg font-semibold text-cooperative-dark sticky top-0 bg-cooperative-cream py-3 px-4 rounded-lg">
-                {monthYear}
-              </h3>
-              <div className="space-y-3">
-                {transactions.map((transaction) => {
-                  const ServiceIcon = transaction.serviceIcon;
-                  const isPositive = transaction.amount > 0;
-                  const isNegative = transaction.amount < 0;
-                  
-                  return (
-                    <div
-                      key={transaction.id}
-                      onClick={() => {
-                        setSelectedTransaction(transaction);
-                        setShowTransactionModal(true);
-                      }}
-                      className="bg-white rounded-xl p-4 shadow-lg border border-cooperative-dark/5 hover:shadow-xl transition-all cursor-pointer"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                            isPositive ? 'bg-green-100' : isNegative ? 'bg-red-100' : 'bg-cooperative-teal/10'
-                          }`}>
-                            {isPositive ? (
-                              <ArrowUpRight className={`w-6 h-6 text-green-600`} />
-                            ) : isNegative ? (
-                              <ArrowDownRight className="w-6 h-6 text-red-600" />
-                            ) : (
-                              <ServiceIcon className="w-6 h-6 text-cooperative-teal" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold text-cooperative-dark">{transaction.type}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(transaction.category)}`}>
-                                {transaction.category}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(transaction.status)}`}>
-                                {transaction.status}
-                              </span>
-                            </div>
-                            <p className="text-sm text-cooperative-dark/70 mt-1">{transaction.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-cooperative-dark/50">
-                              <span>{transaction.date}</span>
-                              <span>•</span>
-                              <span>{transaction.time}</span>
-                              <span>•</span>
-                              <span className="font-mono">{transaction.reference}</span>
-                            </div>
-                            {transaction.property && (
-                              <div className="flex items-center gap-1 mt-1 text-xs text-cooperative-teal">
-                                <Home className="w-3 h-3" />
-                                <span>{transaction.property}, {transaction.location}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`text-xl font-bold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-cooperative-dark'}`}>
-                            {formatAmount(transaction.amount)}
-                          </div>
-                          <div className="text-xs text-cooperative-dark/50 mt-1">{transaction.method}</div>
-                          <button className="mt-2 text-cooperative-orange hover:text-cooperative-orange/80">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* ── Pending section ── */}
+      <section className="space-y-4">
+        <SectionHeader variant="pending" count={filteredPending.length} />
+        {filteredPending.length === 0
+          ? <EmptyState variant="pending" />
+          : Object.entries(groupByMonth(filteredPending)).map(([m, txns]) => (
+              <MonthGroup key={m} monthYear={m} transactions={txns} variant="pending" onSelect={setSelectedTransaction} />
+            ))}
+      </section>
 
-      {/* Transaction Details Modal */}
-      {showTransactionModal && selectedTransaction && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-spinIn">
-            <div className="sticky top-0 bg-white border-b border-cooperative-dark/10 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    selectedTransaction.amount > 0 ? 'bg-green-100' : 
-                    selectedTransaction.amount < 0 ? 'bg-red-100' : 'bg-cooperative-teal/10'
-                  }`}>
-                    {selectedTransaction.amount > 0 ? (
-                      <ArrowUpRight className="w-6 h-6 text-green-600" />
-                    ) : selectedTransaction.amount < 0 ? (
-                      <ArrowDownRight className="w-6 h-6 text-red-600" />
-                    ) : (
-                      <Wallet className="w-6 h-6 text-cooperative-teal" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-cooperative-dark">{selectedTransaction.type}</h3>
-                    <p className="text-cooperative-dark/60">{selectedTransaction.service}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowTransactionModal(false)}
-                  className="p-2 hover:bg-cooperative-cream rounded-lg transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
+      {/* ── Confirmed section ── */}
+      <section className="space-y-4">
+        <SectionHeader variant="confirmed" count={filteredConfirmed.length} />
+        {filteredConfirmed.length === 0
+          ? <EmptyState variant="confirmed" />
+          : Object.entries(groupByMonth(filteredConfirmed)).map(([m, txns]) => (
+              <MonthGroup key={m} monthYear={m} transactions={txns} variant="confirmed" onSelect={setSelectedTransaction} />
+            ))}
+      </section>
 
-            <div className="p-6 space-y-6">
-              {/* Amount */}
-              <div className="bg-cooperative-cream rounded-xl p-6 text-center">
-                <span className="text-sm text-cooperative-dark/60">Transaction Amount</span>
-                <div className={`text-4xl font-bold mt-2 ${
-                  selectedTransaction.amount > 0 ? 'text-green-600' : 
-                  selectedTransaction.amount < 0 ? 'text-red-600' : 'text-cooperative-dark'
-                }`}>
-                  {formatAmount(selectedTransaction.amount)}
-                </div>
-              </div>
+      {/* ── Declined section ── */}
+      <section className="space-y-4">
+        <SectionHeader variant="rejected" count={filteredRejected.length} />
+        {filteredRejected.length === 0
+          ? <EmptyState variant="rejected" />
+          : Object.entries(groupByMonth(filteredRejected)).map(([m, txns]) => (
+              <MonthGroup key={m} monthYear={m} transactions={txns} variant="rejected" onSelect={setSelectedTransaction} />
+            ))}
+      </section>
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-cooperative-dark/40" />
-                    <span className="text-cooperative-dark/60">Date & Time:</span>
-                    <span className="font-medium text-cooperative-dark">{selectedTransaction.date} at {selectedTransaction.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CreditCard className="w-4 h-4 text-cooperative-dark/40" />
-                    <span className="text-cooperative-dark/60">Payment Method:</span>
-                    <span className="font-medium text-cooperative-dark">{selectedTransaction.method}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <FileText className="w-4 h-4 text-cooperative-dark/40" />
-                    <span className="text-cooperative-dark/60">Reference:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-cooperative-dark">{selectedTransaction.reference}</span>
-                      <button className="p-1 hover:bg-cooperative-cream rounded">
-                        <Copy className="w-3 h-3 text-cooperative-dark/60" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-cooperative-dark/40" />
-                    <span className="text-cooperative-dark/60">Status:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedTransaction.status)}`}>
-                      {selectedTransaction.status}
-                    </span>
-                  </div>
-                  {selectedTransaction.balance && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Wallet className="w-4 h-4 text-cooperative-dark/40" />
-                      <span className="text-cooperative-dark/60">Balance After:</span>
-                      <span className="font-bold text-cooperative-dark">${selectedTransaction.balance.toLocaleString()}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Additional Details based on transaction type */}
-              {selectedTransaction.property && (
-                <div className="border-t border-cooperative-dark/10 pt-4">
-                  <h4 className="font-semibold text-cooperative-dark mb-3">Property Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Property</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.property}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Location</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.location}</p>
-                    </div>
-                    {selectedTransaction.duration && (
-                      <div>
-                        <span className="text-xs text-cooperative-dark/60">Duration</span>
-                        <p className="font-medium text-cooperative-dark">{selectedTransaction.duration}</p>
-                      </div>
-                    )}
-                    {selectedTransaction.dailyRate && (
-                      <div>
-                        <span className="text-xs text-cooperative-dark/60">Daily Rate</span>
-                        <p className="font-medium text-cooperative-dark">${selectedTransaction.dailyRate}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedTransaction.loanType && (
-                <div className="border-t border-cooperative-dark/10 pt-4">
-                  <h4 className="font-semibold text-cooperative-dark mb-3">Loan Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Loan Type</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.loanType}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Interest Rate</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.interestRate}%</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Duration</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.duration}</p>
-                    </div>
-                    {selectedTransaction.remainingBalance && (
-                      <div>
-                        <span className="text-xs text-cooperative-dark/60">Remaining Balance</span>
-                        <p className="font-medium text-cooperative-dark">${selectedTransaction.remainingBalance.toLocaleString()}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedTransaction.interestRate && !selectedTransaction.loanType && (
-                <div className="border-t border-cooperative-dark/10 pt-4">
-                  <h4 className="font-semibold text-cooperative-dark mb-3">Interest Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-xs text-cooperative-dark/60">Interest Rate</span>
-                      <p className="font-medium text-cooperative-dark">{selectedTransaction.interestRate}%</p>
-                    </div>
-                    {selectedTransaction.dividendRate && (
-                      <div>
-                        <span className="text-xs text-cooperative-dark/60">Dividend Rate</span>
-                        <p className="font-medium text-cooperative-dark">{selectedTransaction.dividendRate}%</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-cooperative-dark/10">
-                <button className="flex-1 px-4 py-3 border border-cooperative-dark/20 text-cooperative-dark rounded-xl hover:bg-cooperative-cream transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Download Receipt
-                </button>
-                <button className="flex-1 px-4 py-3 bg-cooperative-orange text-white rounded-xl hover:bg-cooperative-orange/90 transition-colors flex items-center justify-center gap-2">
-                  <Share2 className="w-4 h-4" />
-                  Share Statement
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -57,9 +57,12 @@ const Field = ({ field, value, onChange }) => {
         >
           <option value="" disabled>Select {field.label}...</option>
           {(field.options || []).map((opt) => (
-            <option key={opt} value={typeof opt === 'object' ? opt.value : opt}>
-              {typeof opt === 'object' ? opt.label : opt}
-            </option>
+           <option
+  key={typeof opt === 'object' ? opt.value : opt}
+  value={typeof opt === 'object' ? opt.value : opt}
+>
+  {typeof opt === 'object' ? opt.label : opt}
+</option>
           ))}
         </select>
       );

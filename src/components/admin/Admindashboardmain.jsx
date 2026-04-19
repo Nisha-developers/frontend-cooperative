@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminStatsCard from './AdminStatsCard';
    
 import Request from './Request';
+import { useAuth } from '../../context/AuthContext';
+import PopupMessage from '../ui/PopupMessage';
+import { useNavigate } from 'react-router-dom';
 const AdminDashboard = () => {
+  const {user} = useAuth();
+  const [isopen, setopen] = useState(false);
+  const navigate = useNavigate();
+ 
+  
   // Sample data for the dashboard
   const stats = [
     {
@@ -173,6 +181,31 @@ const houseRequests = [
     date: "2026-03-27"
   }
 ];
+console.log(user);
+console.log(Boolean(user))
+
+
+
+
+  useEffect(() => {
+    if (!user) {
+      const timer = setTimeout(() => {
+        navigate('/adminlogin45');
+      }, 3000);
+      return () => clearTimeout(timer); // cleanup if component unmounts
+    }
+  }, [user, navigate]);
+
+  if (!user) {
+    return (
+      <PopupMessage
+        message='Session expired. You will be logged out soonest'
+        title='Session expired'
+        type='error'
+        isOpen={isopen}
+      />
+    );
+  }
   return (
     <div className="min-h-screen bg-cooperative-cream p-6">
       {/* Header */}

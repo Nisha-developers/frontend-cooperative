@@ -26,7 +26,7 @@ const StatCard = ({ title, value, icon: Icon, color,  bgColor, textColor  }) => 
         <div className={`p-3 rounded-xl ${color} bg-opacity-10 group-hover:scale-110 transition-transform duration-500`}>
           <Icon size={24} className={color.replace('bg-', 'text-')} />
         </div>
-        <span className={`text-3xl font-bold ${textColor}`}>₦0.00</span>
+        <span className={`text-3xl font-bold ${textColor}`}>₦{value}</span>
       </div>
       <h3 className={`text-sm font-medium ${textColor}`}>{title}</h3>
     </div>
@@ -48,6 +48,7 @@ const ProfileItem = ({ icon: Icon, label, value}) => (
 const Dashboardmain = ({componentUserValue}) => {
   const [profileData, setProfileData] = useState({});
   const walletValue = componentUserValue.wallet;
+ 
   const userValue = componentUserValue.user;
   const profiles = userValue;
   const [isOpen, setOpen] = useState(false)
@@ -144,7 +145,7 @@ useEffect(() => {
 
   fetchProfile();
 }, []);
- const refinedDateJoined = `${getOrdinalSuffix(day)} ${months[dateJoined.getMonth()]}, ${dateJoined.getFullYear()}`;
+ const refinedDateJoined = `${getOrdinalSuffix(day)} ${months[dateJoined.getMonth() + 1]}, ${dateJoined.getFullYear()}`;
 const handleSubmit = async (data) => {
   try {
     const token = getAccessToken();
@@ -223,14 +224,14 @@ const handleSubmit = async (data) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
         <StatCard 
           title="Total Balance" 
-          value= {walletValue.balance} 
+          value= {Number(walletValue.balance).toLocaleString()} 
           icon={RiWalletLine}
           color="bg-[#F57C00]"
           bgColor = 'bg-[#003000]'
           textColor = 'text-[#FDF6EC]'
         />
         <StatCard 
-          title="Deductible" 
+          title="Total Deductible" 
           value="0.00" 
           icon={RiPlantLine}
           color="bg-[#2E7D32]"
@@ -242,8 +243,8 @@ const handleSubmit = async (data) => {
 
       {/* Profile Section */}
       <div className="rounded-2xl bg-white shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[#003000]">Profile Information</h2>
+        <div className="flex items-center justify-between mb-6 max-small-screen:flex-col max-small-screen:items-start max-small-screen:gap-y-2">
+          <h2 className="text-2xl font-bold text-[#003000] sm:text-[25px]">Profile Information</h2>
           <button className="px-4 py-2 text-sm bg-[#F57C00] hover:bg-[#F57C00]/80 text-white rounded-lg transition-all duration-300">
             Edit Profile
           </button>
@@ -258,6 +259,7 @@ const handleSubmit = async (data) => {
           <ProfileItem icon={RiBuildingLine} label="Bank Name" value={profileData.bank_name} />
           <ProfileItem icon={RiMapPinLine} label="Location" value={profileData.address} />
           <ProfileItem icon={RiUserLine} label="Username" value={profiles.username} />
+           <ProfileItem icon={RiUserLine} label="Account Name" value={profileData.account_name} />
         </div>
       </div>
      {createPortal(<div className=''><PopupForm  isOpen= {isOpen}

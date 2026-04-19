@@ -6,14 +6,9 @@ import Agricultural from '../../components/admin/Agricultural.jsx';
 import CreditandThrift from '../../components/admin/CreditandThrift.jsx';
 import HousingCooperative from '../../components/admin/HousingCooperative.jsx';
 import Transaction from '../../components/admin/Transaction.jsx';
-import HousingLand from '../../components/admin/HousingLand.jsx';
-import HousingLeasing from '../../components/admin/HousingLeasing.jsx';
 import HousingSale from '../../components/admin/HousingSale.jsx';
-import LandRequest from '../../components/admin/LandRequest.jsx';
-import LeasingRequest from '../../components/admin/LeasingRequest.jsx';
 import SalesRequest from '../../components/admin/SalesRequest.jsx';
 import ManageMember from '../../components/admin/ManageMember.jsx';
-
 import { useAuth } from '../../context/AuthContext.jsx';
 
 
@@ -42,12 +37,8 @@ useEffect(() => {
 }, []);
 const pages = {
    dashboard: Admindashboardmain,
-   manageBuy: HousingSale,
-   manageRent: HousingLeasing,
-  manageLand: HousingLand,
-  salesAccept: SalesRequest,
-  rentAccept: LeasingRequest,
-  landAccept: LandRequest,
+   ControlHousing: HousingSale,
+   manageRequest: SalesRequest,
   managehousing: HousingCooperative,
   managecredit: CreditandThrift,
   manageagricultural: Agricultural,

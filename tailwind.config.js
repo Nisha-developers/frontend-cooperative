@@ -32,6 +32,7 @@ module.exports = {
       },
       screens: {
         'custom-1000': '998px',
+        'small-screen': '400px'
       },
     },
   },

@@ -13,7 +13,7 @@ import PopupForm from './components/ui/PopupForm'
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+
     <BrowserRouter>
      {/* <DashboardLayout />  */}
         <App />   
@@ -22,5 +22,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         {/* <RentApartment />   */}
       <Toaster position="top-right" />
     </BrowserRouter>
-  </React.StrictMode>
+
 )

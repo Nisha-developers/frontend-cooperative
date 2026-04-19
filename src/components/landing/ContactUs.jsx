@@ -1,6 +1,68 @@
+import { useState } from 'react';
 import { AnimateOnScroll, StaggerWrapper, StaggerItem, fadeUp, fadeLeft, fadeRight, scaleIn } from '../../animations/AnimateOnScroll'
+import { createPortal } from 'react-dom';
+import PopupMessage from '../ui/PopupMessage';
+import emailjs from '@emailjs/browser';
 
 export default function ContactUs() {
+const [firstName, setFirstName] = useState('');
+const [lastName, setLastName] = useState('');
+const [email, setEmail] = useState('');
+const [phone, setPhone] = useState('');
+const [subject, setSubject] = useState('');
+const [description, setdescription] = useState('');
+const [message, setMessage] = useState('');
+const [title, setTitle] = useState('');
+const [type, setType] = useState('');
+const [open, setOpen] = useState(false)
+
+  const sendMessage = (e) =>{
+
+    const data = {
+    first_name: firstName,
+    last_name: lastName,
+    email: email,
+    phone: phone,
+    subject: subject,
+    description:description
+    }
+    if(data.first_name === '' || data.last_name === '' || data.email === '' || data.phone === '' || data.subject === '' || data.description === ''){
+     setOpen(true);
+     setType('error');
+     setTitle('Form submission Error');
+     setMessage('Make sure that the form is filled properly and try again')
+    }
+    e.preventDefault();
+    console.log(data)
+    emailjs.send(
+    'service_g165c0f',
+    'template_ffngpu3',
+     data,
+    'Yb_pXxcsEQQ7sgzaD'
+  )
+  .then(() => {
+    setOpen(true);
+    setType('success');
+    setTitle('Message Sent');
+    setMessage('Your message has been sent successfully!');
+
+    // Clear form
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setPhone('');
+    setSubject('');
+    setdescription('');
+  })
+  .catch((err) => {
+    console.log(err);
+    setOpen(true);
+    setType('error');
+    setTitle('Error');
+    setMessage('Failed to send message. Try again.');
+  });
+  
+  }
   return (
     <section className="bg-cooperative-teal py-10 px-6" id="contactus">
       <div className="max-w-6xl mx-auto">
@@ -216,14 +278,17 @@ export default function ContactUs() {
                         type="text"
                         placeholder="e.g. Emeka"
                         className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
+                        onChange={(e)=>setFirstName(e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Last Name</label>
                       <input
+                      onChange={(e)=>setLastName(e.target.value)}
                         type="text"
                         placeholder="e.g. Adeyemi"
                         className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
+                        
                       />
                     </div>
                   </div>
@@ -233,6 +298,7 @@ export default function ContactUs() {
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem] ">Email Address</label>
                     <input
+                    onChange={(e)=>setEmail(e.target.value)}
                       type="email"
                       placeholder="you@example.com"
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
@@ -244,6 +310,7 @@ export default function ContactUs() {
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Phone Number</label>
                     <input
+                      onChange={(e)=>setPhone(e.target.value)}
                       type="tel"
                       placeholder="+234 800 000 0000"
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 rounded-lg"
@@ -254,7 +321,7 @@ export default function ContactUs() {
                 <StaggerItem variant={fadeUp} duration={0.45}>
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Subject</label>
-                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none rounded-lg">
+                    <select className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 appearance-none rounded-lg"  onChange={(e)=>setSubject(e.target.value)}>
                       <option value="" className="bg-cooperative-dark">Select a subject</option>
                       <option value="housing" className="bg-cooperative-dark">Housing Inquiry</option>
                       <option value="purchase" className="bg-cooperative-dark">Property Purchase</option>
@@ -270,6 +337,7 @@ export default function ContactUs() {
                   <div className="flex flex-col gap-1">
                     <label className="text-cooperative-cream/50 text-[0.65rem] uppercase tracking-[0.15rem]">Message</label>
                     <textarea
+                      onChange={(e)=>setdescription(e.target.value)}
                       rows={5}
                       placeholder="Tell us how we can help you..."
                       className="bg-cooperative-teal/10 border border-white/10 text-cooperative-cream placeholder:text-cooperative-cream/20 text-sm px-4 py-3 outline-none focus:border-cooperative-orange transition-colors duration-200 resize-none rounded-lg"
@@ -278,7 +346,7 @@ export default function ContactUs() {
                 </StaggerItem>
 
                 <StaggerItem variant={scaleIn} duration={0.45}>
-                  <button
+                  <button onClick={sendMessage}
                     type="submit"
                     className="bg-cooperative-orange text-cooperative-dark font-black uppercase tracking-widest text-sm px-8 py-4 hover:bg-cooperative-cream transition-colors duration-200 mt-1 w-full rounded-2xl"
                   >
@@ -305,6 +373,7 @@ export default function ContactUs() {
         </AnimateOnScroll>
 
       </div>
+      {createPortal(<PopupMessage isOpen={open} message={message} type={type} onClose={()=>setOpen(false)} title={title} />, document.body)}
     </section>
   );
 }

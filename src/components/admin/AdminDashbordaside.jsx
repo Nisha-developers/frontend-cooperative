@@ -15,16 +15,9 @@ import {
 
 
 const housingServices = [
-  { id: 1, link: 'manageBuy', label: 'Sales', icon: RiHomeOfficeLine },
-  { id: 2, link: 'manageRent', label: 'Leasing', icon: RiShoppingBagLine },
-  { id: 3, link: 'manageLand', label: 'Land', icon: RiHome2Line }
+  { id: 1, link: 'ControlHousing', label: 'Control', icon: RiHomeOfficeLine },
+  { id: 2, link: 'manageRequest', label: 'Request', icon: RiShoppingBagLine },
 ];
-const housingServicesBookings = [
-  { id: 1, link: 'salesAccept', label: 'Sales', icon: RiHomeOfficeLine },
-  { id: 2, link: 'rentAccept', label: 'Leasing', icon: RiShoppingBagLine },
-  { id: 3, link: 'landAccept', label: 'Land',    icon:  RiHome2Line }
-];
-
 const Cooperative = [
   { id: 1, link: 'managehousing', label: 'Housing', icon: RiBuildingLine },
   { id: 2, link: 'managecredit', label: 'Credit & Thrift', icon: RiBankLine }
@@ -145,18 +138,13 @@ const  AdminDashbordaside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMob
         </ul>
 
         {/* Housing Services */}
-        <SectionTitle title="Housing" moredetails='Contains Form and View available apartments' />
+        <SectionTitle title="Estate Management" moredetails='Contains Form and View available apartments' />
         <ul className="space-y-1 mb-4">
           {housingServices.map((item) => (
             <NavItem key={item.id} icon={item.icon} label={item.label} link={item.link} />
           ))}
         </ul>
-         <SectionTitle title="Housing Bookings" moredetails='Accept or Reject Housing Bookings' />
-        <ul className="space-y-1 mb-4">
-          {housingServicesBookings.map((item) => (
-            <NavItem key={item.id} icon={item.icon} label={item.label} link={item.link} />
-          ))}
-        </ul>
+        
 
         {/* Cooperative */}
         <SectionTitle title="Cooperative Request" />
