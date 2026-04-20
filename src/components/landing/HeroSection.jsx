@@ -63,7 +63,7 @@ const HeroSection = () => {
       <div className="w-full ">
         <MarqueeTicker />
       </div>
-{createPortal(<div className='h-10 w-10 fixed bg-green-900 right-7 bottom-7 rounded-full flex items-center justify-center cursor-pointer'>
+{createPortal(<div className='h-10 w-10 fixed bg-green-900 right-7 bottom-7 rounded-full flex items-center justify-center cursor-pointer z-[100000000]'>
   <a href="https://wa.me/2347051598561"><FaWhatsapp size={25} className='text-white'/></a>
 </div>, document.body)}
     </div>

@@ -43,6 +43,8 @@ import CodeSenda from './components/auth/CodeSenda'
 import ForgetPassworda from './components/auth/ForgetPassworda'
 import VerifyPassworda from './components/auth/VerifyPassworda'
 import ResetPassworda from './components/auth/ResetPassworda'
+import HousingCooperativeBody from './pages/public/HousingCooperativeBody';
+
 
 function App() {
  
@@ -57,6 +59,7 @@ function App() {
         <Route path="/rent" element={<RentApartment />} />
          <Route path="/land" element={<LandSection/>} />
         <Route path="/buy" element={<BuyApartment />} />
+         <Route path="/housinCoop" element={<HousingCooperativeBody />} />
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
@@ -76,6 +79,7 @@ function App() {
 
           {/* User (protected) */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
+
          
         
           <Route path="/payment/:bookingId" element={<ProtectedRoute><PaymentUploadPage /></ProtectedRoute>} />
