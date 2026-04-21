@@ -6,7 +6,7 @@ import Footer from "../../components/layout/Footer";
 // ─── Variants ─────────────────────────────────────────────────────
 const fadeUp = { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } };
 const fadeLeft = { hidden: { opacity: 0, x: -60 }, visible: { opacity: 1, x: 0 } };
-const fadeRight = { hidden: { opacity: 0, x: 60 }, visible: { opacity: 1, x: 0 } };
+const fadeRight = { hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } };
 const scaleIn = { hidden: { opacity: 0, scale: 0.88 }, visible: { opacity: 1, scale: 1 } };
 const stagger = (s = 0.12, d = 0.1) => ({ hidden: {}, visible: { transition: { staggerChildren: s, delayChildren: d } } });
 const ease = [0.22, 1, 0.36, 1];
