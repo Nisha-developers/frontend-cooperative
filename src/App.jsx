@@ -44,6 +44,7 @@ import ForgetPassworda from './components/auth/ForgetPassworda'
 import VerifyPassworda from './components/auth/VerifyPassworda'
 import ResetPassworda from './components/auth/ResetPassworda'
 import HousingCooperativeBody from './pages/public/HousingCooperativeBody';
+import CreditAndThriftBody from './pages/public/CreditAndThriftBody';
 
 
 function App() {
@@ -60,6 +61,7 @@ function App() {
          <Route path="/land" element={<LandSection/>} />
         <Route path="/buy" element={<BuyApartment />} />
          <Route path="/housinCoop" element={<HousingCooperativeBody />} />
+         <Route path="/credit" element={<CreditAndThriftBody/>} />
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />

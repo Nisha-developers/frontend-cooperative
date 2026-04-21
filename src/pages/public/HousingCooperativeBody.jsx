@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
+import { Link} from 'react-router-dom'
 
 // ─── Animation Variants ───────────────────────────────────────────
 const fadeUp = {
@@ -14,7 +15,7 @@ const fadeLeft = {
   visible: { opacity: 1, x: 0 },
 };
 const fadeRight = {
-  hidden: { opacity: 0, x: 60 },
+  hidden: { opacity: 0, x: 10 },
   visible: { opacity: 1, x: 0 },
 };
 const scaleIn = {
@@ -106,7 +107,7 @@ const steps = [
   {
     num: "02",
     title: "Set up your profile",
-    desc: "Complete your personal profile — full name, contact details, identification, and next-of-kin. This is required before any cooperative activity.",
+    desc: "Complete your personal profile  contact details and identification. This is required before any cooperative activity.",
   },
   {
     num: "03",
@@ -175,7 +176,7 @@ export default function HousingCooperativeBody() {
     <div className="bg-[#FDF6EC] font-sans text-[#003000]">
 <Navbar />
       {/* ── HERO ── */}
-      <section className="bg-[#003000] px-6 pt-[100px] pb-[50px] text-center ">
+      <section className="bg-[#003000] px-6 pt-[100px] pb-[50px] text-center h-[100vh] flex items-center">
         <div className="max-w-2xl mx-auto">
           <AnimateOnScroll delay={0}>
             <span className="inline-block bg-[#F57C00] text-[#FDF6EC] text-xs font-medium tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
@@ -190,19 +191,19 @@ export default function HousingCooperativeBody() {
           </AnimateOnScroll>
           <AnimateOnScroll delay={0.2}>
             <p className="text-[#9dc89d] text-base leading-relaxed mb-8 max-w-xl mx-auto">
-              A structured, transparent way to save, plan, and secure your apartment — all within your cooperative account. No guesswork. Just steady progress toward your home.
+              A structured, transparent way to save, plan, and secure your apartment. All within your cooperative account. No guesswork. Just steady progress toward your home.
             </p>
           </AnimateOnScroll>
           <AnimateOnScroll delay={0.3} variant={scaleIn}>
-            <button className="bg-[#F57C00] hover:bg-[#e06500] text-[#FDF6EC] font-medium text-sm px-7 py-3 rounded-lg transition-colors duration-200 cursor-pointer">
-              Get started — set up your profile
-            </button>
+            <Link className="bg-[#F57C00] hover:bg-[#e06500] text-[#FDF6EC] font-medium text-sm px-7 py-3 rounded-lg transition-colors duration-200 cursor-pointer" to='/login'>
+              Get started, set up your profile
+            </Link>
           </AnimateOnScroll>
         </div>
       </section>
 
       {/* ── BEFORE YOU BEGIN ── */}
-      <section className="bg-[#FDF6EC] px-6 py-16">
+      <section className="bg-[#FDF6EC] px-6 py-16" id="section2">
         <div className="max-w-4xl mx-auto">
           <AnimateOnScroll>
             <SectionLabel>Before you begin</SectionLabel>
@@ -213,13 +214,13 @@ export default function HousingCooperativeBody() {
               Complete these steps before accessing housing cooperative services. Your profile must be set up first.
             </p>
           </AnimateOnScroll>
-          <StaggerWrapper className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StaggerWrapper className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ">
             {steps.map((s) => (
               <StaggerItem key={s.num}>
                 <motion.div
-                  whileHover={{ y: -5 }}
+                  whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-white border border-[#c8dbc8] rounded-xl p-5 h-full"
+                  className="bg-white border border-[#c8dbc8] rounded-xl p-5 h-full cursor-pointer"
                 >
                   <div className="w-9 h-9 rounded-full bg-[#003000] text-[#FDF6EC] text-sm font-medium flex items-center justify-center mb-4">
                     {s.num}
@@ -426,7 +427,7 @@ export default function HousingCooperativeBody() {
                 textColor: "text-[#FDF6EC]",
                 subColor: "text-[#9dc89d]",
                 title: "Profile setup is mandatory",
-                desc: "You must fully complete your profile before any housing cooperative activity — savings, purchases, or loan applications — can take place.",
+                desc: "You must fully complete your profile before any housing cooperative activities eg. phone Number , Location, account number and the likes or loan applications can take place.",
               },
               {
                 color: "bg-[#F57C00]",
@@ -467,7 +468,7 @@ export default function HousingCooperativeBody() {
       </section>
 
       {/* ── CTA BANNER ── */}
-      <section className="bg-[#003000] px-6 py-16 text-center">
+      <section className="bg-cooperative-teal px-6 py-16 text-center">
         <div className="max-w-2xl mx-auto">
           <AnimateOnScroll>
             <h2 className="text-2xl sm:text-3xl font-medium text-[#FDF6EC] mb-3">
@@ -477,20 +478,20 @@ export default function HousingCooperativeBody() {
               Set up your profile today and take the first step toward housing cooperative membership. Your apartment is waiting.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <motion.button
+              <Link
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="bg-[#F57C00] text-[#FDF6EC] font-medium text-sm px-6 py-3 rounded-lg cursor-pointer"
-              >
+              to='/login'>
                 Set up my profile
-              </motion.button>
-              <motion.button
+              </Link>
+              <motion.a
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="border border-[#9dc89d] text-[#FDF6EC] font-medium text-sm px-6 py-3 rounded-lg cursor-pointer hover:bg-[#1a4a1a] transition-colors"
-              >
+              href="#section2">
                 Learn about cooperatives
-              </motion.button>
+              </motion.a>
             </div>
           </AnimateOnScroll>
         </div>
