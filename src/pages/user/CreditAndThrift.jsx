@@ -85,8 +85,6 @@ const creditTransaction = getcreditTrans.filter((val)=>val.type === 'CREDIT').re
 const debitTransaction = getcreditTrans.filter((val)=>val.type === 'DEBIT').reduce((totalvalue, val)=>totalvalue += Number(val.amount), 0);
 
   const creditAndThriftBalance = creditTransaction - debitTransaction;
-
-  const interest = (creditAndThriftBalance * 0.5 * 1) / 100;
   const withdrawal = [ {
       name: "amount",
       label: "Amount",
@@ -136,7 +134,7 @@ if(!eligible){
     creditScore: 780,
     loanEligibility: loanEligibility(user?.wallet.created_on, creditAndThriftBalance)[0],
     reason: loanEligibility(user?.wallet.created_on, creditAndThriftBalance)[1],
-    maxLoanAmount: loanEligibility(user?.wallet.created_on, creditAndThriftBalance)[2] ?(creditAndThriftBalance + interest) * 2 : 0,
+    maxLoanAmount: loanEligibility(user?.wallet.created_on, creditAndThriftBalance)[2] ?creditAndThriftBalance * 2 : 0,
   };
  function loanEligibility(datecreation, balance, amount = 0){
   let reason = '';
@@ -224,8 +222,7 @@ const addSavings = () =>{
 
   const thriftBalance = {
     totalSavings: creditAndThriftBalance,
-    accruedInterest: interest,
-    availableBalance: creditAndThriftBalance + interest,
+    availableBalance: creditAndThriftBalance,
     pendingWithdrawals: 5000,
     nextContributionDate: '2024-04-15',
     interestRate: 0.5,
