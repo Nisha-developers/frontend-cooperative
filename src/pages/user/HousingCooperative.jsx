@@ -210,8 +210,8 @@ const SubmitSavings = () =>{
     return credits - debits;
   }, [housingCooperative]);
 
-  const accruedInterest = +(principalBalance * 0.5 / 100).toFixed(2);
- let totalBalance    = +(principalBalance + accruedInterest).toFixed(2);
+  
+ let totalBalance    = principalBalance.toFixed(2);
 const Payinstallment = (findApartment, detailedApartment) =>{
   
 }
@@ -322,16 +322,7 @@ debit({amount: findApartment.price, source: 'PURCHASE', remark: `housing_coopera
           <div>
             <span className="text-white/60 text-sm">Housing Cooperative Balance</span>
             <div className="max-sm:text-4xl text-5xl font-bold mt-2">{formatNaira(totalBalance)}</div>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-1 text-white/80">
-                <PiggyBank className="w-4 h-4" />
-                <span className="text-sm">Principal: {formatNaira(principalBalance)}</span>
-              </div>
-              <div className="flex items-center gap-1 text-white/80">
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-sm">Interest: {formatNaira(accruedInterest)}</span>
-              </div>
-            </div>
+          
           </div>
 
           <div className="mt-6 md:mt-0 flex gap-3 max-sm:flex-col">
@@ -355,7 +346,7 @@ debit({amount: findApartment.price, source: 'PURCHASE', remark: `housing_coopera
         {/* Quick stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
           <div>
-            <span className="text-white/60 text-xs">Interest Rate</span>
+            <span className="text-white/60 text-xs">Loan Interest Rate</span>
             <div className="text-xl font-bold text-white mt-1">0.5% p.a.</div>
           </div>
           <div>

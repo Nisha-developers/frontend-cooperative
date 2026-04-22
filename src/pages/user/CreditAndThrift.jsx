@@ -446,7 +446,7 @@ const addSavings = () =>{
         </div>
 
         {/* Transaction Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-lg border border-cooperative-dark/5">
             <span className="text-sm text-cooperative-dark/60">Total Deposits</span>
             <div className="text-xl font-bold text-cooperative-teal mt-1">
