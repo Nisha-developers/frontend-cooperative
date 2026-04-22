@@ -57,9 +57,9 @@ function App() {
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/agric" element={<BethelAgriculturalBody />} />
-        <Route path="/rent" element={<RentApartment />} />
-         <Route path="/land" element={<LandSection/>} />
-        <Route path="/buy" element={<BuyApartment />} />
+        <Route path="/rentApartment" element={<RentApartment />} />
+         <Route path="/buyLand" element={<LandSection/>} />
+        <Route path="/buyApartment" element={<BuyApartment />} />
          <Route path="/housinCoop" element={<HousingCooperativeBody />} />
          <Route path="/credit" element={<CreditAndThriftBody/>} />
 
@@ -80,7 +80,7 @@ function App() {
              {/* Admin login session ends */}
 
           {/* User (protected) */}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
+          <Route path="/user" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
 
          
         

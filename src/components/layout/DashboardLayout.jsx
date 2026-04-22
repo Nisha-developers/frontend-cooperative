@@ -39,6 +39,7 @@ useEffect(() => {
     window.removeEventListener("hashchange", handleHashChange);
   };
 }, []);
+console.log(activePage);
 const pages = {
   dashboard: Dashboardmain,
   rent:RentApartment,
@@ -51,7 +52,8 @@ const pages = {
   payment: PaymentInfo
 };
 
-const PageComponent = pages[activePage] || Dashboardmain;
+const PageComponent = pages[activePage]  || Dashboardmain;
+
 if(isAdmin){
   return(<PopupMessage message="You are not authorized to view this page." title='User dashboard Error' type='error' isOpen = {true}/>);
 }

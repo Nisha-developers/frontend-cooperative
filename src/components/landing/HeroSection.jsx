@@ -49,7 +49,7 @@ const HeroSection = () => {
               <a className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem] bg-cooperative-cream py-3 mb-2 rounded-lg' href='#contactus'>
                 Contact us
               </a>
-              <Link className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem]  bg-cooperative-orange text-cooperative-cream py-3 mb-2 rounded-lg hover:bg-orange-800' to='/buy'> 
+              <Link className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem]  bg-cooperative-orange text-cooperative-cream py-3 mb-2 rounded-lg hover:bg-orange-800' to='/buyApartment'> 
                 Check out houses options
               </Link>
             </div>

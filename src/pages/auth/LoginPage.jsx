@@ -22,16 +22,16 @@ const navigateTo = () =>{
   let direction = ''
   switch(location.state){
     case 'rememberBuy':
-      direction = '/dashboard#buy'
+      direction = '/user#buy'
       break;
     case 'rememberRent':
-       direction = '/dashboard#rent'
+       direction = '/user#rent'
       break;
     case 'rememberLand':
-      direction = '/dashboard#land'
+      direction = '/user#land'
       break
     default:
-      direction = '/dashboard'
+      direction = '/user#dashboard'
   }
   sessionStorage.setItem('place', direction);
   return direction

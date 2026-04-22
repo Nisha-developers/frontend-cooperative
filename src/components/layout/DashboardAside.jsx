@@ -59,7 +59,7 @@ const balance = transactions?.transactions
     return (
       <li className="group relative">
         <a
-          href={`#${link}`}
+          href={`/user#${link}`}
           onClick={handleLinkClick}
           className="flex items-center px-4 py-3 text-[#003000] hover:text-[#2E7D32] transition-all duration-300 rounded-xl hover:bg-[#FDF6EC]"
         >
