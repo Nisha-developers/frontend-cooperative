@@ -4,6 +4,7 @@ import imagesHero from '../../assets/images/WhatsApp_Image_2026-02-25_at_6.57.20
 import MarqueeTicker from './MarqueeTicker';
 import Navbar from '../layout/Navbar';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { FaWhatsapp } from 'react-icons/fa';
 
 const HeroSection = () => {
@@ -45,12 +46,12 @@ const HeroSection = () => {
               benefits all in one trusted platform. Join thousands of members building their future.
             </p>
             <div className='mt-8 custom-1000:flex custom-1000:gap-6 custom-1000:justify-center'>
-              <button className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem] bg-cooperative-cream py-3 mb-2 rounded-lg'>
+              <a className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem] bg-cooperative-cream py-3 mb-2 rounded-lg' href='#contactus'>
                 Contact us
-              </button>
-              <button className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem]  bg-cooperative-orange text-cooperative-cream py-3 mb-2 rounded-lg hover:bg-orange-800'>
+              </a>
+              <Link className='block mx-auto custom-1000:mx-0 custom-1000:w-[15rem] w-[15rem] sm:w-[30rem]  bg-cooperative-orange text-cooperative-cream py-3 mb-2 rounded-lg hover:bg-orange-800' to='/buy'> 
                 Check out houses options
-              </button>
+              </Link>
             </div>
           </div>
 

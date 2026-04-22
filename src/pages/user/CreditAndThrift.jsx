@@ -375,14 +375,6 @@ const addSavings = () =>{
               <span className="text-white/60 text-sm">Thrift Savings Balance</span>
               <div className="text-5xl font-bold mt-2">₦{thriftBalance.availableBalance.toLocaleString()}</div>
               <div className="flex items-center gap-4 mt-3">
-                <div className="flex items-center gap-1 text-white/80">
-                  <PiggyBank className="w-4 h-4" />
-                  <span className="text-sm">Principal: ₦{thriftBalance.totalSavings.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-1 text-white/80">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm">Interest: ₦{thriftBalance.accruedInterest.toLocaleString()}</span>
-                </div>
               </div>
             </div>
 
@@ -470,12 +462,7 @@ const addSavings = () =>{
               ₦{totalDeductibles.toLocaleString()}
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-lg border border-cooperative-dark/5">
-            <span className="text-sm text-cooperative-dark/60">Interest Earned</span>
-            <div className="text-xl font-bold text-cooperative-teal mt-1">
-              ₦{interest.toLocaleString()}
-            </div>
-          </div>
+         
           <div className="bg-white rounded-xl p-4 shadow-lg border border-cooperative-dark/5">
             <span className="text-sm text-cooperative-dark/60">Loan Payments</span>
             <div className="text-xl font-bold text-cooperative-dark mt-1">
