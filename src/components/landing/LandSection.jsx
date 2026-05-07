@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { TbCurrencyNaira } from "react-icons/tb";
+import PopupMessage from '../ui/PopupMessage.jsx';
 import {
   RiMapPinLine,
   RiHeartLine,
@@ -13,6 +14,10 @@ import {
   RiPlantLine,
   RiRulerLine,
   RiMoneyDollarCircleLine,
+  RiImageLine,
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiCloseLine,
 } from "react-icons/ri";
 import { PiMapTrifoldLight } from "react-icons/pi";
 import Navbar from '../layout/Navbar.jsx';
@@ -25,10 +30,150 @@ import {
   fadeLeft,
 } from '../../animations/AnimateOnScroll.jsx';
 import { useSale } from '../../context/SaleContext.jsx';
+import { createPortal } from 'react-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const EASE = [0.22, 1, 0.36, 1];
 
+
+// ── Image Lightbox ────────────────────────────────────────────────────────────
+const ImageLightbox = ({ images, startIndex, title, onClose }) => {
+  const [current, setCurrent] = useState(startIndex ?? 0);
+
+  const prev = useCallback(
+    () => setCurrent((c) => (c - 1 + images.length) % images.length),
+    [images.length]
+  );
+  const next = useCallback(
+    () => setCurrent((c) => (c + 1) % images.length),
+    [images.length]
+  );
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [prev, next, onClose]);
+
+  return createPortal(
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-[9999] flex flex-col bg-black/95 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div>
+            <p className="text-white font-semibold text-sm capitalize">{title}</p>
+            <p className="text-white/50 text-xs mt-0.5">{current + 1} / {images.length}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          >
+            <RiCloseLine className="text-xl" />
+          </button>
+        </div>
+
+        {/* Main image */}
+        <div
+          className="flex-1 flex items-center justify-center relative px-4 min-h-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {images.length > 1 && (
+            <button
+              onClick={prev}
+              className="absolute left-4 z-10 p-3 rounded-full bg-white/10 hover:bg-[#F57C00] text-white transition-all duration-200 hover:scale-110"
+            >
+              <RiArrowLeftLine className="text-xl" />
+            </button>
+          )}
+
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={current}
+              src={images[current]?.image_url}
+              alt={`Photo ${current + 1}`}
+              className="max-h-full max-w-full object-contain rounded-lg select-none"
+              style={{ maxHeight: 'calc(100vh - 220px)' }}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              draggable={false}
+            />
+          </AnimatePresence>
+
+          {images.length > 1 && (
+            <button
+              onClick={next}
+              className="absolute right-4 z-10 p-3 rounded-full bg-white/10 hover:bg-[#F57C00] text-white transition-all duration-200 hover:scale-110"
+            >
+              <RiArrowRightLine className="text-xl" />
+            </button>
+          )}
+        </div>
+
+        {/* Dot indicators */}
+        {images.length > 1 && (
+          <div
+            className="flex justify-center gap-1.5 py-3 flex-shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`rounded-full transition-all duration-200 ${
+                  i === current
+                    ? 'bg-[#F57C00] w-5 h-2'
+                    : 'bg-white/30 hover:bg-white/60 w-2 h-2'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Thumbnail strip */}
+        <div
+          className="flex gap-2 px-5 pb-5 overflow-x-auto flex-shrink-0 justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {images.map((img, i) => (
+            <button
+              key={img.uid}
+              onClick={() => setCurrent(i)}
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-150 ${
+                i === current
+                  ? 'border-[#F57C00] scale-105'
+                  : 'border-white/20 hover:border-white/50 opacity-60 hover:opacity-100'
+              }`}
+            >
+              <img src={img.image_url} alt={`Thumb ${i + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
+  );
+};
+
+// ── Benefits Banner ───────────────────────────────────────────────────────────
 const LandBenefits = () => (
+  
   <AnimateOnScroll variant={fadeUp} delay={0.1} duration={0.6}>
     <div className="bg-[#FDF6EC] rounded-2xl p-6 mb-8 border border-[#F57C00]/20">
       <div className="flex items-center gap-3 mb-4">
@@ -47,7 +192,7 @@ const LandBenefits = () => (
           {
             icon: <RiGroupLine className="text-[#F57C00] text-xl flex-shrink-0 mt-1" />,
             title: "Cooperative Installment",
-            desc: "Spread payment over months with 0% interest via cooperative",
+            desc: "Spread payment over months with 0.5% interest via cooperative",
           },
           {
             icon: <RiPlantLine className="text-[#F57C00] text-xl flex-shrink-0 mt-1" />,
@@ -68,9 +213,78 @@ const LandBenefits = () => (
   </AnimateOnScroll>
 );
 
+// ── Land Card ─────────────────────────────────────────────────────────────────
 const LandCard = ({ land }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [showInstallment, setShowInstallment] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxStart, setLightboxStart] = useState(0);
+  const {user} = useAuth();
+   const [message, setmessage] = useState('');
+    const [title, setTitle] = useState('');
+    const [open, setopen] = useState(false);
+    const [error, seterror] = useState('');
+    const navigate = useNavigate()
+  const purchaseApartment = (apartment, type) =>
+    {
+      const apartmentId = apartment.id
+ const availableUser = user?.user && !(user?.user?.is_admin);
+   if(type === 'installment'){
+         if(user && user?.active_loan || user && user?.active_installment
+){
+      setopen(true);
+      setmessage('You are not eligible for land installment. Please pay up your loan');
+      setTitle('Purchase error');
+      seterror('error')
+      return
+    }
+    return
+    
+    }
+ const fullDetail = {
+    apartmentId,
+    rememberBuy:'rememberLand',
+    purchaseType: type === 'full' ? 'OUTRIGHT' : 'INSTALLMENT'
+   }
+
+   sessionStorage.setItem('identityBuyKey', JSON.stringify(fullDetail));
+ if (availableUser) {
+      setopen(true);
+      setmessage('Redirecting to dashboard for payment completion');
+      setTitle(`Payment of ${apartment.title}`);
+      seterror('success');
+     setTimeout(() => {
+  navigate('/user#marketplace', {
+    state: { apartmentId,
+       rememberBuy: 'rememberLand'
+     }
+  });
+}, 3000);
+    } else {
+      setopen(true);
+      setmessage('Redirecting to login page');
+      setTitle(`Payment of ${apartment.title}`);
+      seterror('error');
+     setTimeout(() => {
+  navigate('/login', {
+    state: { 
+      apartmentId,
+      rememberBuy: 'rememberLand'
+    }
+  });
+}, 4500);
+    }
+
+  }
+
+  const images = Array.isArray(land.images) ? land.images : [];
+
+  const openLightbox = (index = 0, e) => {
+    e?.stopPropagation();
+    if (!images.length) return;
+    setLightboxStart(index);
+    setLightboxOpen(true);
+  };
 
   const totalPrice = Number(land.price);
   const monthlyInstallment =
@@ -80,276 +294,325 @@ const LandCard = ({ land }) => {
 
   const areaSqm = Number(land.area_sqm);
   const areaHectares = (areaSqm / 10000).toFixed(2);
-  const areaPlots = (areaSqm / 648).toFixed(1); // 1 plot ≈ 648 sqm (Nigerian standard)
+  const areaPlots = (areaSqm / 648).toFixed(1);
 
   return (
-    <motion.div
-      className="bg-white rounded-2xl shadow-lg overflow-hidden group"
-      whileHover={{ y: -6, boxShadow: "0 24px 48px -8px rgba(0,0,0,0.18)" }}
-      transition={{ duration: 0.35, ease: EASE }}
-    >
-      {/* Visual Header */}
-      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-[#e8f5e9] to-[#c8e6c9] flex items-center justify-center">
-        {/* Decorative land pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id={`grid-${land.id}`} width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#003000" strokeWidth="0.8" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill={`url(#grid-${land.id})`} />
-          </svg>
-        </div>
-        <PiMapTrifoldLight className="text-[#003000] text-7xl opacity-20 relative z-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-
-        {/* Like Button */}
-        <motion.button
-          onClick={() => setIsLiked(!isLiked)}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full"
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
+    <>
+      <motion.div
+        className="bg-white rounded-2xl shadow-lg overflow-hidden group flex flex-col h-full"
+        whileHover={{ y: -6, boxShadow: "0 24px 48px -8px rgba(0,0,0,0.18)" }}
+        transition={{ duration: 0.35, ease: EASE }}
+      >
+        {/* ── Image / Visual Header ── */}
+        <div
+          className="relative h-48 overflow-hidden bg-gradient-to-br from-[#e8f5e9] to-[#c8e6c9] flex items-center justify-center cursor-pointer"
+          onClick={(e) => openLightbox(0, e)}
         >
-          <motion.span
-            key={isLiked ? "liked" : "unliked"}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.25, ease: EASE }}
-          >
-            {isLiked ? (
-              <RiHeartFill className="text-[#F57C00] text-xl" />
-            ) : (
-              <RiHeartLine className="text-gray-400 text-xl" />
-            )}
-          </motion.span>
-        </motion.button>
+          {images.length > 0 ? (
+            <img
+              src={images[0].image_url}
+              alt={land.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <>
+              {/* Decorative grid pattern when no image */}
+              <div className="absolute inset-0 opacity-10">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id={`grid-${land.id}`} width="30" height="30" patternUnits="userSpaceOnUse">
+                      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#003000" strokeWidth="0.8" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#grid-${land.id})`} />
+                </svg>
+              </div>
+              <PiMapTrifoldLight className="text-[#003000] text-7xl opacity-20 relative z-10" />
+            </>
+          )}
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          <div className="px-2 py-1 bg-[#003000] text-white text-xs font-semibold rounded-full">
-            Land
-          </div>
-          {land.allows_installment && (
-            <div className="px-2 py-1 bg-[#F57C00] text-white text-xs font-semibold rounded-full flex items-center gap-1">
-              <RiGroupLine className="text-xs" />
-              <span>Installment</span>
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+
+          {/* Photo count badge */}
+          {images.length > 1 && (
+            <div className="absolute bottom-10 right-3">
+              <div className="flex items-center gap-1 px-2 py-1 bg-black/60 text-white text-xs rounded-full backdrop-blur-sm">
+                <RiImageLine className="text-xs" />
+                <span>{images.length} photos</span>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Status */}
-        <div className="absolute bottom-3 left-3">
-          <span
-            className={`px-2 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
-              land.status === 'available'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
+          {/* Hover hint */}
+          {images.length > 0 && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 text-white text-xs px-3 py-1.5 rounded-full">
+                View photos
+              </span>
+            </div>
+          )}
+
+          {/* Like button */}
+          <motion.button
+            onClick={(e) => { e.stopPropagation(); setIsLiked(!isLiked); }}
+            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
           >
-            {land.status}
-          </span>
-        </div>
+            <motion.span
+              key={isLiked ? "liked" : "unliked"}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.25, ease: EASE }}
+            >
+              {isLiked
+                ? <RiHeartFill className="text-[#F57C00] text-xl" />
+                : <RiHeartLine className="text-gray-400 text-xl" />}
+            </motion.span>
+          </motion.button>
 
-        {/* Area display on image */}
-        <div className="absolute bottom-3 right-3 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
-          <span className="text-white text-xs font-bold">
-            {areaSqm.toLocaleString()} sqm
-          </span>
-        </div>
-      </div>
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1">
+            <div className="px-2 py-1 bg-[#003000] text-white text-xs font-semibold rounded-full">
+              Land
+            </div>
+            {land.allows_installment && (
+              <div className="px-2 py-1 bg-[#F57C00] text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <RiGroupLine className="text-xs" />
+                <span>Installment</span>
+              </div>
+            )}
+          </div>
 
-      {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-[#003000] mb-1 capitalize">{land.title}</h3>
-        <p className="text-xs text-[#F57C00] uppercase tracking-wider mb-3 font-semibold">
-          Land / Plot
-        </p>
+          {/* Status */}
 
-        {/* Location */}
-        <div className="flex items-start gap-2 mb-4">
-          <RiMapPinLine className="text-[#F57C00] text-lg flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#2E7D32]">
-            {land.address}, {land.city}, {land.state}
-          </p>
-        </div>
-
-        {/* Land Specs — sqm / hectares / plots */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#FDF6EC] flex-wrap">
-          <div className="flex items-center gap-1">
-            <RiRulerLine className="text-[#F57C00] text-sm" />
-            <span className="text-xs font-medium text-[#003000]">
+          {/* Area on image */}
+          <div className="absolute bottom-3 right-3 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
+            <span className="text-white text-xs font-bold">
               {areaSqm.toLocaleString()} sqm
             </span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
-          <span className="text-xs font-medium text-[#003000]">{areaHectares} ha</span>
-          <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
-          <span className="text-xs font-medium text-[#003000]">~{areaPlots} plots</span>
         </div>
 
-        {/* Description */}
-        {land.description && (
-          <div className="pb-4 text-sm text-gray-400 leading-relaxed border-l-2 border-[#F57C00] pl-3 mb-4 break-words">
-            {land.description}
+        {/* Thumbnail strip */}
+        {images.length > 1 && (
+          <div className="flex gap-1.5 px-3 pt-2">
+            {images.slice(1, 5).map((img, i) => (
+              <button
+                key={img.uid}
+                onClick={(e) => openLightbox(i + 1, e)}
+                className="flex-1 h-12 rounded-md overflow-hidden border border-gray-100 hover:border-[#F57C00] transition-colors relative"
+              >
+                <img src={img.image_url} alt={`Photo ${i + 2}`} className="w-full h-full object-cover" />
+                {i === 3 && images.length > 5 && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">+{images.length - 5}</span>
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Payment Toggle — only if installment allowed */}
-        {land.allows_installment && (
-          <div className="flex gap-2 mb-4">
-            <motion.button
-              onClick={() => setShowInstallment(false)}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                !showInstallment
-                  ? 'bg-[#003000] text-white'
-                  : 'bg-[#FDF6EC] text-[#003000]'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Full Payment
-            </motion.button>
-            <motion.button
-              onClick={() => setShowInstallment(true)}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                showInstallment
-                  ? 'bg-[#F57C00] text-white'
-                  : 'bg-[#FDF6EC] text-[#003000]'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Installment
-            </motion.button>
-          </div>
-        )}
+        {/* Content */}
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="text-lg font-bold text-[#003000] mb-1 capitalize">{land.title}</h3>
+          <p className="text-xs text-[#F57C00] uppercase tracking-wider mb-3 font-semibold">
+            Land / Plot
+          </p>
 
-        {/* Price Details */}
-        <div className="space-y-3 mb-5">
-          {(!land.allows_installment || !showInstallment) ? (
-            // Full Payment
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                  <RiBankLine className="text-[#F57C00] text-sm" />
-                </div>
-                <span className="text-sm text-[#2E7D32]">Total Price</span>
-              </div>
-              <div className="flex items-center text-base font-bold text-[#003000]">
-                <TbCurrencyNaira />
-                {totalPrice.toLocaleString()}
-                <span className="text-xs text-[#2E7D32] ml-1 font-normal">one-time</span>
-              </div>
+          {/* Location */}
+          <div className="flex items-start gap-2 mb-4">
+            <RiMapPinLine className="text-[#F57C00] text-lg flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-[#2E7D32]">
+              {land.address}, {land.city}, {land.state}
+            </p>
+          </div>
+
+          {/* Land Specs */}
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#FDF6EC] flex-wrap">
+            <div className="flex items-center gap-1">
+              <RiRulerLine className="text-[#F57C00] text-sm" />
+              <span className="text-xs font-medium text-[#003000]">
+                {areaSqm.toLocaleString()} sqm
+              </span>
             </div>
-          ) : (
-            // Installment Plan
-            <>
+            <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
+            <span className="text-xs font-medium text-[#003000]">{areaHectares} ha</span>
+            <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
+            <span className="text-xs font-medium text-[#003000]">~{areaPlots} plots</span>
+          </div>
+
+          {/* Description */}
+          {land.description && (
+            <div className="pb-4 text-sm text-gray-400 leading-relaxed border-l-2 border-[#F57C00] pl-3 mb-4 break-words flex-1">
+              {land.description}
+            </div>
+          )}
+
+          {/* Payment toggle */}
+          {land.allows_installment && (
+            <div className="flex gap-2 mb-4">
+              <motion.button
+                onClick={() => setShowInstallment(false)}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  !showInstallment ? 'bg-[#003000] text-white' : 'bg-[#FDF6EC] text-[#003000]'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Full Payment
+              </motion.button>
+              <motion.button
+                onClick={() => setShowInstallment(true)}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  showInstallment ? 'bg-[#F57C00] text-white' : 'bg-[#FDF6EC] text-[#003000]'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Installment
+              </motion.button>
+            </div>
+          )}
+
+          {/* Price Details */}
+          <div className="space-y-3 mb-5">
+            {(!land.allows_installment || !showInstallment) ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                    <RiMoneyDollarCircleLine className="text-[#F57C00] text-sm" />
+                    <RiBankLine className="text-[#F57C00] text-sm" />
                   </div>
                   <span className="text-sm text-[#2E7D32]">Total Price</span>
                 </div>
-                <div className="flex items-center text-sm font-bold text-[#003000]">
+                <div className="flex items-center text-base font-bold text-[#003000]">
                   <TbCurrencyNaira />
                   {totalPrice.toLocaleString()}
+                  <span className="text-xs text-[#2E7D32] ml-1 font-normal">one-time</span>
                 </div>
               </div>
-
-              {land.minimum_initial_deposit && (
+            ) : (
+              <>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                      <RiWallet3Line className="text-[#F57C00] text-sm" />
+                      <RiMoneyDollarCircleLine className="text-[#F57C00] text-sm" />
                     </div>
-                    <span className="text-sm text-[#2E7D32]">Initial Deposit</span>
+                    <span className="text-sm text-[#2E7D32]">Total Price</span>
                   </div>
                   <div className="flex items-center text-sm font-bold text-[#003000]">
-                    <TbCurrencyNaira />
-                    {Number(land.minimum_initial_deposit).toLocaleString()}
+                    <TbCurrencyNaira />{totalPrice.toLocaleString()}
                   </div>
                 </div>
-              )}
 
-              <div className="flex items-center justify-between pt-2 border-t border-[#FDF6EC]">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-[#F57C00] rounded-lg">
-                    <RiCalendarLine className="text-white text-sm" />
+                {land.minimum_initial_deposit && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-[#FDF6EC] rounded-lg">
+                        <RiWallet3Line className="text-[#F57C00] text-sm" />
+                      </div>
+                      <span className="text-sm text-[#2E7D32]">Initial Deposit</span>
+                    </div>
+                    <div className="flex items-center text-sm font-bold text-[#003000]">
+                      <TbCurrencyNaira />{Number(land.minimum_initial_deposit).toLocaleString()}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-sm font-semibold text-[#003000]">Monthly</span>
-                    <p className="text-xs text-[#2E7D32]">
-                      over {land.installment_duration_months} months
-                    </p>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-[#FDF6EC]">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-[#F57C00] rounded-lg">
+                      <RiCalendarLine className="text-white text-sm" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-[#003000]">Monthly</span>
+                      <p className="text-xs text-[#2E7D32]">over {land.installment_duration_months} months</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center text-base font-bold text-[#F57C00]">
+                      <TbCurrencyNaira />{Number(monthlyInstallment).toLocaleString()}
+                    </div>
+                    <span className="text-xs text-[#2E7D32]">0% interest</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center text-base font-bold text-[#F57C00]">
-                    <TbCurrencyNaira />
-                    {Number(monthlyInstallment).toLocaleString()}
-                  </div>
-                  <span className="text-xs text-[#2E7D32]">0% interest</span>
-                </div>
-              </div>
-            </>
+              </>
+            )}
+          </div>
+
+          {/* CTA */}
+          <motion.button
+            className={`w-full py-3 font-semibold rounded-xl shadow-lg text-white ${
+              land.allows_installment && showInstallment
+                ? 'bg-[#F57C00] hover:bg-[#F57C00]/90'
+                : 'bg-[#003000] hover:bg-[#003000]/90'
+            }`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: EASE }}
+            onClick={() =>
+    purchaseApartment(land,
+      land.allows_installment && showInstallment
+        ? 'installment'
+        : 'full'
+    )
+  }>
+            {land.allows_installment && showInstallment
+              ? 'Join Cooperative & Pay Installment'
+              : 'Purchase Land'}
+          </motion.button>
+
+          {land.allows_installment && showInstallment && (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mt-2 text-xs text-[#2E7D32]"
+            >
+              New to cooperative?{' '}
+              <button className="text-[#F57C00] font-semibold hover:underline">Join here</button>
+            </motion.p>
           )}
+            {createPortal(
+                <PopupMessage isOpen={open} title={title} message={message} type={error} onClose={() => setopen(false)} />,
+                document.body
+              )}
         </div>
+      </motion.div>
 
-        {/* CTA */}
-        <motion.button
-          className={`w-full py-3 font-semibold rounded-xl shadow-lg text-white ${
-            land.allows_installment && showInstallment
-              ? 'bg-[#F57C00] hover:bg-[#F57C00]/90'
-              : 'bg-[#003000] hover:bg-[#003000]/90'
-          }`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ duration: 0.2, ease: EASE }}
-        >
-          {land.allows_installment && showInstallment
-            ? 'Join Cooperative & Pay Installment'
-            : 'Purchase Land'}
-        </motion.button>
-
-        {land.allows_installment && showInstallment && (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mt-2 text-xs text-[#2E7D32]"
-          >
-            New to cooperative?{' '}
-            <button className="text-[#F57C00] font-semibold hover:underline">Join here</button>
-          </motion.p>
-        )}
-      </div>
-    </motion.div>
+      {/* Lightbox */}
+      {lightboxOpen && images.length > 0 && (
+        <ImageLightbox
+          images={images}
+          startIndex={lightboxStart}
+          title={land.title}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 const LandSection = () => {
+ 
   const { sales, viewDetails } = useSale();
   const [landDetails, setLandDetails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bg, setBg] = useState(false);
-
-  useEffect(() => {
-    setBg(true);
-  }, []);
+ 
+  useEffect(() => { setBg(true); }, []);
 
   useEffect(() => {
     if (sales.length === 0) return;
 
     const landIds = sales
-      .filter((val) => val.property_type === 'land')
+      .filter((val) => val.property_type === 'land' && val.status === 'available')
       .map((val) => val.id)
-      .slice(0, 5);
+     
 
-    if (landIds.length === 0) {
-      setLoading(false);
-      return;
-    }
+    if (landIds.length === 0) { setLoading(false); return; }
 
     const getFullDetails = async () => {
       setLoading(true);
@@ -369,7 +632,6 @@ const LandSection = () => {
         <Navbar bgvar={bg} setbgvar={setBg} />
       </div>
 
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 px-5">
         <AnimateOnScroll variant={fadeLeft} delay={0.1} duration={0.6}>
           <div>
@@ -383,48 +645,33 @@ const LandSection = () => {
         </AnimateOnScroll>
       </div>
 
-      {/* Benefits Banner */}
       <div className="px-5">
         <LandBenefits />
       </div>
 
-      {/* Grid */}
       {loading ? (
         <p className="text-center text-[#2E7D32] py-10">Loading land listings...</p>
       ) : landDetails.length === 0 ? (
         <p className="text-center text-[#2E7D32] py-10">No land listings available.</p>
       ) : (
         <StaggerWrapper
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-5 items-stretch"
           stagger={0.13}
           delay={0.15}
           amount={0.05}
         >
           {landDetails.map((land) => (
-            <StaggerItem key={land.id} variant={fadeUp} duration={0.55}>
+            <StaggerItem key={land.id} variant={fadeUp} duration={0.55} className="h-full">
               <LandCard land={land} />
             </StaggerItem>
           ))}
         </StaggerWrapper>
       )}
 
-      {/* View More — only if more than 5 */}
-      {totalLands > 5 && (
-        <AnimateOnScroll variant={fadeUp} delay={0.1} duration={0.6}>
-          <div className="flex justify-center pt-4">
-            <motion.button
-              className="px-8 py-3 bg-white text-[#003000] font-semibold rounded-xl border-2 border-[#F57C00] hover:bg-[#F57C00] hover:text-white transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.25, ease: EASE }}
-            >
-              View More Land Listings
-            </motion.button>
-          </div>
-        </AnimateOnScroll>
-      )}
+    
 
       <Footer />
+     
     </div>
   );
 };

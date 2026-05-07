@@ -7,18 +7,6 @@ import { useSale } from '../../context/SaleContext';
 const HousingSale = () => {
   const { sales } = useSale();
   const theSales = Array.isArray(sales) ? sales : [];
-
-  // ── Derived stats ─────────────────────────────────────────────────────────────
-  const totalAmount   = theSales.reduce((t, s) => t + (Number(s.price) || 0), 0);
-  const saleListings  = theSales.filter(s => s.listing_type === 'sale');
-  const rentListings  = theSales.filter(s => s.listing_type === 'rent');
-  const landListings  = theSales.filter(s => s.property_type === 'land');
-  const saleAmount    = saleListings.reduce((t, s) => t + (Number(s.price) || 0), 0);
-  const rentAmount    = rentListings.reduce((t, s) => t + (Number(s.price) || 0), 0);
-  const landAmount    = landListings.reduce((t, s) => t + (Number(s.price) || 0), 0);
-  const furnished     = theSales.filter(s => s.is_furnished).length;
-  const installment   = theSales.filter(s => s.allows_installment).length;
-
   const fmt = (n) => `₦${Number(n).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const houseIcon = (
@@ -39,27 +27,19 @@ const HousingSale = () => {
 
   return (
     <div>
-      {/* ── Stats grid ──────────────────────────────────────────────────────── */}
-      <div className='grid sm:grid-cols-2 gap-3 lg:grid-cols-3 mb-10'>
-        <AdminStatsCard label='Total Listings'       amount={theSales.length}          bigStyle={true} icon={houseIcon} />
-        <AdminStatsCard label='Sale Listings'        amount={saleListings.length}       icon={houseIcon} />
-        <AdminStatsCard label='Rent Listings'        amount={rentListings.length}       icon={houseIcon} />
-        <AdminStatsCard label='Land Listings'        amount={landListings.length}       icon={houseIcon} />
-        <AdminStatsCard label='Furnished'            amount={furnished}                 icon={houseIcon} />
-        <AdminStatsCard label='Allow Installment'    amount={installment}               icon={houseIcon} />
-        <AdminStatsCard label='Total Value'          amount={fmt(totalAmount)}          bigStyle={true} icon={moneyIcon} />
-        <AdminStatsCard label='Sale Amount'          amount={fmt(saleAmount)}           icon={moneyIcon} />
-        <AdminStatsCard label='Rent Amount'          amount={fmt(rentAmount)}           icon={moneyIcon} />
-        <AdminStatsCard label='Land Amount'          amount={fmt(landAmount)}           icon={moneyIcon} />
-      </div>
-
-      {/* ── Add listing form ────────────────────────────────────────────────── */}
       <AdminForm />
-
-      {/* ── Listings with built-in filter ───────────────────────────────────── */}
       <section className='mt-4'>
-        <ApartmentList valueApartMent={theSales} />
+        <ApartmentList valueApartMent={theSales.filter((val)=>val.status === 'available')} titles= 'Available Listings' showAll = {true} allowDeleteEdit = {true}/>
       </section>
+       <section className='mt-1'>
+        <ApartmentList valueApartMent={theSales.filter((val)=>val.status === 'pending')} titles= 'Pending Listings' showAll = {true} allowDeleteEdit = {false}/>
+      </section>
+       <section className='mt-1'>
+        <ApartmentList valueApartMent={theSales.filter((val)=>val.status === 'sold')} titles= 'Purchased Listings' showAll = {true} allowDeleteEdit = {false} />
+          </section>
+           <section className='mt-1'>
+        <ApartmentList valueApartMent={theSales.filter((val)=>val.status === 'rented')} titles= 'Rented Listings' showAll = {false} allowDeleteEdit = {false}/>
+          </section>
     </div>
   );
 };

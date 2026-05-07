@@ -11,46 +11,54 @@ import {
   RiHistoryLine,
   RiSettings4Line,
   RiWallet3Line,
-  RiDashboardLine
+  RiDashboardLine,
+  RiStoreLine,
+  RiFileListLine
 } from "react-icons/ri";
 import useWalletStore from '../../hooks/useWallet';
 
 
 const housingServices = [
-  { id: 1, link: 'rent', label: 'Rent Apartment', icon: RiHomeOfficeLine },
-  { id: 2, link: 'buy', label: 'Buy Apartment', icon: RiShoppingBagLine }
+ { id: 1, link: 'rent', label: 'Rent ', icon: RiHomeOfficeLine },
+  { id: 2, link: 'marketplace', label: 'Marketplace', icon: RiStoreLine },
+ 
+
+  // { id: 3, link: 'land', label: 'Land', icon: RiShoppingBagLine }
 ];
 
 const Cooperative = [
-  { id: 1, link: 'housing', label: 'Housing', icon: RiBuildingLine },
-  { id: 2, link: 'agricultural', label: 'Agricultural', icon: RiSeedlingLine },
-  { id: 3, link: 'credit', label: 'Credit & Thrift', icon: RiBankLine }
+  { id: 3, link: 'credit', label: 'Credit and thrift ', icon: RiFileListLine },
+   { id: 4, link: 'loan', label: 'Housing', icon: RiBankLine},
 ];
+const History = [
+ { id: 4, link: 'loanhistory', label: 'Loan', icon: RiHistoryLine },
+  { id: 2, link: 'history', label: 'Purchase', icon: RiHistoryLine },
+    { id: 1, link: 'transaction', label: 'Transactions', icon: RiHistoryLine },
+     { id: 3, link: 'rentHistory', label: 'Rent', icon: RiHistoryLine },
+]
 
 const Others = [
-  { id: 1, link: 'transaction', label: 'Transactions', icon: RiHistoryLine },
+
   { id: 2, link: 'settings', label: 'Settings', icon: RiSettings4Line },
   { id: 3, link: 'payment', label: 'Payment Info', icon: RiWallet3Line }
 ];
 
 const DashboardAside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMobileMenuOpen, componentUserValue}) => {
+  const {logout} = useAuth()
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) {
       setMobileMenuOpen(false);
     }
   };
+  const handleLogOut = () =>{
+    logout()
+  }
   const userValue = componentUserValue.user;
- const gettransaction = useWalletStore((state) => state.getTransactions);
- const transactions = useWalletStore((state) => state.transactions);
- const {getAccessToken} = useAuth();
-useEffect(() => {
-   const token = getAccessToken();
-   gettransaction(token);
-}, []);
+  const walletValue = componentUserValue?.wallet;
+  const avatar = componentUserValue?.profile?.avatar_url
 
-const balance = transactions?.transactions
-  ?.filter((val) => val.remark === 'balance_funding')
-  ?.reduce((total, val) => total + (Number(val.amount) || 0), 0) || 0;
+ 
+
 
   const NavItem = ({ icon: Icon, label, link }) => {
     // Determine if we should show the label
@@ -103,7 +111,7 @@ const balance = transactions?.transactions
         <div className={`flex items-center transition-all duration-300 ${
           (iscollapse || mobileMenuOpen) ? 'opacity-100' : 'opacity-0 hidden'
         }`}>
-          <div className="w-8 h-8 bg-[#F57C00] rounded-lg flex items-center justify-center">
+        {avatar ? <img src={avatar} className='h-[50px] w-[50px] rounded-full'/> :   <div className="w-8 h-8 bg-[#F57C00] rounded-lg flex items-center justify-center">
             <span className="text-[#FDF6EC] font-bold text-xl">{
   userValue.full_name
     ?.split(' ')
@@ -111,7 +119,7 @@ const balance = transactions?.transactions
     .join('')
 }
   </span>
-          </div>
+          </div>}
           <span className="ml-3 text-[#003000] font-bold text-xl">Bethel <span className='text-cooperative-orange'>Cooperative</span></span>
         </div>
         
@@ -138,10 +146,13 @@ const balance = transactions?.transactions
         </button>
        
       </div>
-      <div className={`text-cooperative-dark  font-bold py-4 px-4  flex-col gap-2 ${iscollapse ? 'flex': 'hidden'}`}>
-        <div>@{userValue.username}</div>
-        <div>{userValue.membership_id}</div>
-        <div>Balance: <span>₦{balance.toFixed(2).toLocaleString() ?? 0}</span></div>
+      <div className={`text-cooperative-dark  font-bold py-4 px-4  flex-col gap-2 ${iscollapse || mobileMenuOpen ? 'flex': 'hidden'}`}>
+        <div>UserName: {userValue.username}</div>
+        <div>Membership Id: {userValue.membership_id}</div>
+        <div>Balance: ₦{Number(walletValue.balance).toLocaleString(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+})}</div>
         </div>
 
       {/* Navigation */}
@@ -152,7 +163,7 @@ const balance = transactions?.transactions
         </ul>
 
         {/* Housing Services */}
-        <SectionTitle title="Housing" />
+        <SectionTitle title="Purchase" />
         <ul className="space-y-1 mb-4">
           {housingServices.map((item) => (
             <NavItem key={item.id} icon={item.icon} label={item.label} link={item.link} />
@@ -163,6 +174,14 @@ const balance = transactions?.transactions
         <SectionTitle title="Cooperative" />
         <ul className="space-y-1 mb-4">
           {Cooperative.map((item) => (
+            <NavItem key={item.id} icon={item.icon} label={item.label} link={item.link} />
+          ))}
+        </ul>
+
+         {/* History */}
+        <SectionTitle title="History" />
+        <ul className="space-y-1 mb-4">
+          {History.map((item) => (
             <NavItem key={item.id} icon={item.icon} label={item.label} link={item.link} />
           ))}
         </ul>
@@ -179,8 +198,11 @@ const balance = transactions?.transactions
       {/* Logout Button */}
       <div className="px-4 mt-6">
         <button 
-          onClick={handleLinkClick}
-          className="flex items-center w-full px-4 py-3 text-[#003000] hover:text-[#F57C00] transition-all duration-300 rounded-xl hover:bg-[#FDF6EC] group"
+          onClick={()=>{
+            handleLinkClick();
+            handleLogOut();
+          }}
+          className="flex items-center w-full px-4 py-3 text-[#003000] hover:text-[#F57C00] transition-all duration-300 rounded-xl hover:bg-[#FDF6EC] group cursor-pointer"
         >
           <CiLogout size={20} className="flex-shrink-0 transition-transform group-hover:scale-110" />
           <span className={`ml-4 whitespace-nowrap transition-all duration-300 ${

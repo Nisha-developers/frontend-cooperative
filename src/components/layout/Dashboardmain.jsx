@@ -15,11 +15,18 @@ import { useAuth } from '../../context/AuthContext';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PopupForm from '../ui/PopupForm';
+import useWalletStore from '../../hooks/useWallet';
+import { Link } from 'react-router-dom';
+import PopupMessage from '../ui/PopupMessage';
 
 
 
-const StatCard = ({ title, value, icon: Icon, color,  bgColor, textColor  }) => (
-  <div className={`group relative overflow-hidden rounded-2xl  shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 ${bgColor} ${textColor}`}>
+const StatCard = ({ title, value, icon: Icon, color,  bgColor, textColor, withdrawal, withdrawalogic, activeLoan, linkDirection }) =>{
+  const repayLoan = () => {
+   
+  }
+  return(
+ <div className={`group relative overflow-hidden rounded-2xl  shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 ${bgColor} ${textColor}`}>
     <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${color}`} />
     <div className="relative p-6">
       <div className="flex items-center justify-between mb-4">
@@ -29,9 +36,16 @@ const StatCard = ({ title, value, icon: Icon, color,  bgColor, textColor  }) => 
         <span className={`text-3xl font-bold ${textColor}`}>₦{value}</span>
       </div>
       <h3 className={`text-sm font-medium ${textColor}`}>{title}</h3>
+     {withdrawal ? (<button className="mt-4 px-4 py-2 text-sm bg-[#F57C00] hover:bg-[#F57C00]/80 text-white rounded-lg transition-all duration-300 float-right font-bold mb-5 text-[20px] cursor-pointer" onClick={withdrawalogic}>Withdraw</button>) : (<div className="mt-4 px-4 py-2 text-sm bg-[#003000] hover:bg-[#001000]/80 text-white rounded-lg transition-all duration-300 float-right font-bold mb-5 text-[20px] cursor-pointer"><a href={linkDirection}>{activeLoan}</a></div>)}
     </div>
   </div>
-);
+  )
+
+
+}
+ 
+  
+ 
 
 const ProfileItem = ({ icon: Icon, label, value}) => (
   <div className={`flex items-start space-x-3 p-3 rounded-xl  hover:bg-[#FDF6EC] transition-all duration-300 group`}>
@@ -57,6 +71,16 @@ const Dashboardmain = ({componentUserValue}) => {
   const {getAccessToken} = useAuth();
   const [form, setForm] = useState({});
   const [profile, setProfile] = useState({});
+  const [openWithdrwal, setOpenWithdrawal] = useState(false);
+  const withdrawMoney = useWalletStore((s)=>s.withdraw);
+  const title = useWalletStore((s)=>s.title);
+  const open = useWalletStore((s)=>s.open);
+  const error = useWalletStore((s)=>s.error);
+  const  message = useWalletStore((s)=>s.message);
+   const  closeMessage = useWalletStore((s)=>s.closeMessage); 
+
+  
+
  const accessToken = getAccessToken();
   const months = [
   "January",
@@ -72,7 +96,10 @@ const Dashboardmain = ({componentUserValue}) => {
   "November",
   "December"
 ];
+const withdraw = () =>{
 
+  setOpenWithdrawal(true);
+}
 
 const formFields = [
   {
@@ -111,7 +138,21 @@ const formFields = [
     required: true
   }
 ];
-
+const withdrawFormFields = [
+  {
+    name: "amount",
+    label: "Amount to Withdraw",
+    type: "number",
+    placeholder: "Enter amount (₦)",
+    required: true,
+    min: 100, // optional minimum withdrawal
+  }
+];
+const transactions = (data) =>{
+  const payload = {amount: data.amount, source: 'WITHDRAWAL'}
+  withdrawMoney(payload, accessToken);
+  setOpenWithdrawal(false);
+}
 async function getUserProfile() {
   const token = getAccessToken();
 
@@ -128,8 +169,7 @@ async function getUserProfile() {
   setProfile(data)
 
 if (!res.ok) {
-    console.error(" BACKEND RESPONSE:", data); 
-    console.error(" STATUS:", res.status);
+   
     throw new Error(JSON.stringify(data));
   }
 setProfileData(data)
@@ -171,7 +211,6 @@ const handleSubmit = async (data) => {
       return;
     }
 
-    console.log("SUCCESS:", result);
     setProfileData(result);
     setOpen(false)
   } catch (err) {
@@ -206,9 +245,22 @@ const handleSubmit = async (data) => {
       return d + "th";
   }
 }
-
-
-
+const totalDeductable = (
+  componentUserValue?.active_loan?.total_outstanding ??
+  componentUserValue?.active_installment?.total_outstanding ??
+  0
+)
+function getActive(){
+  if(componentUserValue.active_loan){
+    return '/user#credit'
+  }
+  else if(componentUserValue.active_installment){
+    return 'user#loan'
+  }
+  else{
+    return '/user#credit'
+  }
+}
 
   return (
     <div className="space-y-6">
@@ -224,19 +276,31 @@ const handleSubmit = async (data) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
         <StatCard 
           title="Total Balance" 
-          value= {Number(walletValue.balance).toLocaleString()} 
+         
           icon={RiWalletLine}
           color="bg-[#F57C00]"
           bgColor = 'bg-[#003000]'
           textColor = 'text-[#FDF6EC]'
+          withdrawal = {true}
+          value={Number(walletValue.balance ?? 0).toLocaleString(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})}
+          withdrawalogic = {withdraw}
         />
         <StatCard 
           title="Total Deductible" 
-          value="0.00" 
+          value={Number(totalDeductable).toLocaleString(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})}
           icon={RiPlantLine}
           color="bg-[#2E7D32]"
           bgColor = ''
           textColor = ''
+          activeLoan={componentUserValue.active_loan || componentUserValue.active_installment
+ ? 'Repay Loan' : 'Request Loan'}
+          linkDirection = {getActive()}
         />
       
       </div>
@@ -245,9 +309,9 @@ const handleSubmit = async (data) => {
       <div className="rounded-2xl bg-white shadow-lg p-6">
         <div className="flex items-center justify-between mb-6 max-small-screen:flex-col max-small-screen:items-start max-small-screen:gap-y-2">
           <h2 className="text-2xl font-bold text-[#003000] sm:text-[25px]">Profile Information</h2>
-          <button className="px-4 py-2 text-sm bg-[#F57C00] hover:bg-[#F57C00]/80 text-white rounded-lg transition-all duration-300">
+          <a className="px-4 py-2 text-sm bg-[#F57C00] hover:bg-[#F57C00]/80 text-white rounded-lg transition-all duration-300"  href='/user#settings'>
             Edit Profile
-          </button>
+          </a>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -268,6 +332,8 @@ const handleSubmit = async (data) => {
         title="Register"
         onSubmit={handleSubmit}
         submitLabel="Submit a detailed profile"/></div>, document.body)}
+        {createPortal(<PopupForm formfield={withdrawFormFields} isOpen={openWithdrwal} onClose={() => setOpenWithdrawal(false)} title='Debit Amount' submitLabel='Submit Amount' onSubmit={(data)=> transactions(data) } />, document.body)}
+          {createPortal(<PopupMessage isOpen={open} message={message} type={error} onClose={()=>closeMessage()} title={title} />, document.body)}
     </div>
   );
 };

@@ -58,7 +58,6 @@ const [success, setSuccess] = useState(false);
 alert('Full in all the required field before you continue')
     }
 
-    console.log("Signup:", form);
     // Prepare the data for backend
  
      const userDatas = {
@@ -105,14 +104,14 @@ alert('Full in all the required field before you continue')
           setType('error')
          }
          else{
-          console.log('inability to sign up');
+         
          }
       window.scrollTo({ top: 80, left: 0, behavior: "smooth" });
         return;
       }
 
       const data = await response.json();
-      console.log("User registered successfully:", data);
+    
       setOpen(true);
       setMessage('You have successfully created an account. Login to continue');
       setType('success');
@@ -172,16 +171,12 @@ alert('Full in all the required field before you continue')
       <div className="w-full max-w-md relative">
         {/* Header */}
         <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-cooperative-dark mb-5 shadow-lg">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M14 4v20M4 14h20" stroke="#F57C00" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-          </div>
+         
           <h1
             className="text-3xl font-bold text-cooperative-dark tracking-tight"
             style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: "-0.02em" }}
           >
-            Join the cooperative and patronize our Apartments' Services 
+           Join the Admin Board
           </h1>
           <p className="mt-2 text-sm text-cooperative-dark opacity-50 font-medium">
             Create your account it only takes a minute

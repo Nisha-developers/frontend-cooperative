@@ -5,6 +5,7 @@ import PopupForm from '../ui/PopupForm';
 import { useAuth } from '../../context/AuthContext';
 import {useSale} from '../../context/SaleContext'
 import PopupMessage from '../ui/PopupMessage';
+import ImageUploadModal from '../ui/ImageUploadModal';
 
 
 const AdminForm = () => {
@@ -14,12 +15,14 @@ const AdminForm = () => {
   const [open, setOpen] = useState(false);
   const [submitListing, setSubmitListing] = useState('');
   const [step, setStep] = useState('');
-  const {getAccessToken} = useAuth();
+  const {getAccessToken, refreshAccessToken} = useAuth();
   const {sales,setSales} = useSale();
   const [message, setMessage] = useState('');
   const [titles, setTitles] = useState('');
   const [isOpen, setisOpen] = useState(false);
   const [error, seterror] = useState('')
+  const [houseID, setHouseId] = useState('');
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   // Post Request Function Begins
   const postRequest = async (data) => {
@@ -40,10 +43,15 @@ const AdminForm = () => {
     );
 
     const result = await response.json();
-    console.log(result);
+    
    
 
     if (!response.ok) {
+      console.log(result);
+      if(response.status === 401){
+        refreshAccessToken();
+        fetchUser()
+      }
        setisOpen(true)
       seterror('error');
       setMessage(result.message);
@@ -51,14 +59,16 @@ const AdminForm = () => {
      
       throw new Error(result.message || 'Something went wrong');
     }
-     setSales((prev) =>[...prev, result])
-      setisOpen(true)
-      seterror('success');
-      setMessage('You have successfully added an apartment');
-      setTitles('Add listing successful')
-
+   setSales((prev) => [...prev, result]);
+setHouseId(result.id);
+setisOpen(true);
+seterror('success');
+setMessage('You have successfully added an apartment');
+setTitles('Add listing successful');
+setImageModalOpen(true);
     return result;
   } catch (error) {
+    console.log(error)
      setisOpen(true)
       seterror('error');
       setMessage(error.message);
@@ -67,9 +77,55 @@ const AdminForm = () => {
     throw error;
   }
 };
-  // Post Request Function Ends
+const uploadListingImage = async (token, listingId, file) => {
+  try {
+    const formData = new FormData();
+    formData.append("images", file); 
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/listings/${listingId}/images/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+         
+        },
+        body: formData,
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+  
+      throw new Error(data.message || "Image upload failed");
+    }
+
+    return data;
+  } catch (err) {
+   
+    console.error("UPLOAD ERROR:", err.message);
+    throw err;
+  }
+};
+  const uploadImageForModal = (listingId, file) => {
+  const token = getAccessToken();
+  return uploadListingImage(token, listingId, file);
+};
+
 
   // ─── SHARED: Listing Type ────────────────────────────────────────────────────
+   const imageField = [
+  {
+    name: 'images',
+    type: 'file',
+    label: 'Upload Images',
+    required: true,
+    accept: 'image/*',
+    multiple: true,
+  },
+];
+
   const listingType = [
     {
       name: 'listing_type',
@@ -100,6 +156,7 @@ const AdminForm = () => {
       options: [{ label: 'Yes', value: true }, { label: 'No', value: false }],
     },
   ];
+ 
 
   const listingType3Installment = [
     { label: 'Initial Payment', name: 'minimum_initial_deposit', type: 'number', placeholder: 'eg 200000', required: true, min: 1000 },
@@ -107,6 +164,7 @@ const AdminForm = () => {
   ];
 
   const listingTypeFinalSale = [
+   
     { label: 'Bedrooms', name: 'bedrooms', type: 'number', required: true, min: 0 },
     { label: 'Bathrooms', name: 'bathrooms', type: 'number', required: true, min: 0 },
     { label: 'Toilets', name: 'toilets', type: 'number', required: true, min: 0 },
@@ -129,13 +187,7 @@ const AdminForm = () => {
    { label: 'City', name: 'city', placeholder: 'eg Yaba', required: true },
 ];
 const listingType2Rent = [
-   {
-    label: 'Rent Duration',
-    name: 'rent_duration',
-    placeholder: 'eg 12 months',
-    required: true,
-  },
-  { type: 'number', name: 'price', label: 'Price (₦)', placeholder: 'eg 2500000', required: true },
+  { type: 'number', name: 'price_per_day', label: 'Price per day (₦)', placeholder: 'eg 2500000', required: true },
 ];
 const listingType3Rent = [
 
@@ -146,7 +198,7 @@ const listingType3Rent = [
   { label: 'Toilets', name: 'toilets', type: 'number', required: true, min: 0 },
 ];
 const listingTypeFinalRent = [
-  { label: 'Area (sqm)', name: 'area_sqm', type: 'number', placeholder: 'eg 120', required: true, min: 1 },
+     { label: 'Area (sqm)', name: 'area_sqm', type: 'number', placeholder: 'eg 120', required: true, min: 1 },
 
   {
     name: 'is_furnished',
@@ -205,6 +257,7 @@ const listingType3LandInstallment = [
   },
 ];
 const listingTypeFinalLand = [
+  
   {
     label: 'Price', name: 'price', placeholder: 'eg 8500000', required: true,
     type: 'number' 
@@ -225,10 +278,10 @@ const listingTypeFinalLand = [
   };
 
   // ─── Central Submit Handler ───────────────────────────────────────────────────
-  const handleSubmit = (data) => {
-    setFormData((prev) => {
-      const updated = { ...prev, ...data };
-
+  const handleSubmit = async (data) => {
+   
+       const updated = { ...formData, ...data };
+  setFormData(updated);
       // ── TYPE SELECTION ──────────────────────────────────────────────────────
       if (step === 'type') {
         if (data.listing_type === 'sale') {
@@ -256,7 +309,7 @@ const listingTypeFinalLand = [
         setSubmitListing('Next');
 
       } else if (step === 'sale2') {
-     console.log(data);
+   
         if (data.allows_installment === true) {
           setStep('sale_installment');
           setFormField(listingType3Installment);
@@ -278,8 +331,9 @@ const listingTypeFinalLand = [
 
       } else if (step === 'sale_final') {
         const fullData = { ...updated, property_type: 'house', listing_type: 'sale' };
-        console.log('✅ SALE fullData:', fullData);
-        postRequest(fullData);
+       
+        
+      await postRequest(fullData);
         setOpen(false);
          
 
@@ -303,9 +357,11 @@ const listingTypeFinalLand = [
         setSubmitListing('Submit Listing');
 
       } else if (step === 'rent_final') {
-        const fullData = { ...updated, property_type: 'house', listing_type: 'rent' };
-        console.log('✅ RENT fullData:', fullData);
-        postRequest(fullData);
+        console.log(data);
+        const fullData = { ...updated, property_type: 'house', listing_type: 'rent', price: updated.price_per_day};
+        console.log(fullData);
+       
+         await postRequest(fullData);
         // axios.post('/api/listings', fullData);
   
         setOpen(false);
@@ -338,14 +394,13 @@ const listingTypeFinalLand = [
 
       } else if (step === 'land_final') {
         const fullData = { ...updated, property_type: 'land', listing_type: 'sale' };
-        console.log('✅ LAND fullData:', fullData);
-        postRequest(fullData);
+       
+        await postRequest(fullData);
         // axios.post('/api/listings', fullData);
         setOpen(false);
       }
 
       return updated;
-    });
   };
 
   return (
@@ -358,6 +413,15 @@ const listingTypeFinalLand = [
           Add Listing
         </div>
       </div>
+      {imageModalOpen && (
+  <ImageUploadModal
+    isOpen={imageModalOpen}
+    onClose={() => setImageModalOpen(false)}
+    listingId={houseID}
+    uploadFn={uploadImageForModal}
+    onDone={() => setImageModalOpen(false)}
+  />
+)}
       {createPortal(
         <PopupForm
           formfield={formField}
@@ -377,3 +441,9 @@ const listingTypeFinalLand = [
 };
 
 export default AdminForm;
+
+
+
+
+
+

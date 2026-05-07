@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import useWalletStore from '../../hooks/useWallet';
 import { useAuth } from '../../context/AuthContext';
+import { FaSortDown } from "react-icons/fa";
+
 
 /* ─── Remark map — uses your real remark keys ──────────────── */
 function getRemark(val) {
@@ -198,15 +200,10 @@ const TransactionCard = ({ transaction, variant, onClick }) => {
           {/* Text block */}
           <div className="min-w-0 flex-1">
             {/* type · source */}
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <span className="font-bold text-[#003000] text-sm sm:text-[15px] leading-snug mt-0.5">
               {transaction.type}
               {transaction.source ? ` · ${transaction.source.replace(/_/g, ' ')}` : ''}
             </span>
-
-            {/* remark */}
-            <p className="font-bold text-[#003000] text-sm sm:text-[15px] leading-snug mt-0.5">
-              {getRemark(transaction.remark)}
-            </p>
 
             {/* created_by */}
             <p className="text-[11px] text-gray-400 mt-0.5 truncate">
@@ -224,7 +221,7 @@ const TransactionCard = ({ transaction, variant, onClick }) => {
                   <span className="font-mono truncate max-w-[110px] sm:max-w-[200px]">
                     {transaction.reference}
                   </span>
-                
+
                   <button
                     onClick={copyRef}
                     className={`flex-shrink-0 transition-colors hover:${th.iconColor}`}
@@ -237,18 +234,17 @@ const TransactionCard = ({ transaction, variant, onClick }) => {
                   )}
                 </>
               )}
-               
             </div>
-             <div className='text-red-600 text-[14px] font-light pt-4'>
-                    {transaction.rejection_reason ? `Reason: ${transaction.rejection_reason}`: ''}
-                  </div>
+            <div className='text-red-600 text-[14px] font-light pt-4'>
+              {transaction.rejection_reason ? `Reason: ${transaction.rejection_reason}` : ''}
+            </div>
           </div>
         </div>
 
         {/* Right: amount + badge */}
         <div className="flex-shrink-0 flex flex-col items-end gap-2">
-          <p className={`text-base sm:text-lg font-extrabold tabular-nums ${th.amtColor}`}>
-            {fmtAmount(transaction.amount)}
+          <p className={`text-base sm:text-lg font-extrabold tabular-nums ${th.amtColor} ${transaction.type === 'DEBIT' ? 'text-red-500' : ''}`}>
+            {transaction.type === 'DEBIT' ? '-' : '+'}{fmtAmount(transaction.amount)}
           </p>
           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${th.badgeBg}`}>
             <th.Icon className="w-3 h-3" />
@@ -328,21 +324,61 @@ const Transaction = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const { getAccessToken } = useAuth();
-  const token           = getAccessToken();
-  const transactions    = useWalletStore(s => s.transactions);
-  const getTransactions = useWalletStore(s => s.getTransactions);
+  const getTransactions = useWalletStore(s => s.getTransactionsHistory);
 
-  useEffect(() => { getTransactions(token); }, []);
+  const [pendingTransaction,  setPendingTransaction]  = useState({ count: 0, next: null, results: [] });
+  const [declinedTransaction, setDeclinedTransaction] = useState({ count: 0, next: null, results: [] });
+  const [approvedTransaction, setApprovedTransaction] = useState({ count: 0, next: null, results: [] });
+  const [allTransaction,      setAllTransaction]      = useState({ count: 0, next: null, results: [] });
+
+  const [loadingMore, setLoadingMore] = useState({ pending: false, confirmed: false, rejected: false });
+
+  useEffect(() => {
+    async function fetchAll() {
+      const [all, pending, declined, confirmed] = await Promise.all([
+        getTransactions(getAccessToken()),
+        getTransactions(getAccessToken(), '?status=PENDING'),
+        getTransactions(getAccessToken(), '?status=DECLINED'),
+        getTransactions(getAccessToken(), '?status=CONFIRMED'),
+      ]);
+      setAllTransaction(all      ?? { count: 0, next: null, results: [] });
+      setPendingTransaction(pending   ?? { count: 0, next: null, results: [] });
+      setDeclinedTransaction(declined  ?? { count: 0, next: null, results: [] });
+      setApprovedTransaction(confirmed ?? { count: 0, next: null, results: [] });
+    }
+    fetchAll();
+  }, [getAccessToken]);
+
+  /* ── Load-more handler — fetches the `next` URL and appends results ── */
+  const loadMore = async (variant) => {
+    const stateMap = {
+      pending:   { data: pendingTransaction,  setter: setPendingTransaction  },
+      confirmed: { data: approvedTransaction, setter: setApprovedTransaction },
+      rejected:  { data: declinedTransaction, setter: setDeclinedTransaction },
+    };
+    const { data, setter } = stateMap[variant];
+    if (!data.next || loadingMore[variant]) return;
+
+    setLoadingMore(prev => ({ ...prev, [variant]: true }));
+    try {
+      // Extract just the query string e.g. "?page=2&status=CONFIRMED"
+      const query = new URL(data.next).search;
+      const fresh = await getTransactions(getAccessToken(), query);
+      if (fresh) {
+        setter(prev => ({
+          ...fresh,
+          results: [...prev.results, ...(fresh.results ?? [])],
+        }));
+      }
+    } finally {
+      setLoadingMore(prev => ({ ...prev, [variant]: false }));
+    }
+  };
 
   /* ── Split on real status values from your API ── */
-  const allTxns = transactions?.transactions ?? [];
-
-  const confirmedTxns = useMemo(
-    () => allTxns.filter(t => t.status === 'CONFIRMED'), [allTxns]);
-  const rejectedTxns  = useMemo(
-    () => allTxns.filter(t => t.status === 'REJECTED'),  [allTxns]);
-  const pendingTxns   = useMemo(
-    () => allTxns.filter(t => t.status === 'PENDING'),   [allTxns]);
+  const confirmedTxns = approvedTransaction?.results ?? [];
+  const rejectedTxns  = declinedTransaction?.results ?? [];
+  const pendingTxns   = pendingTransaction?.results  ?? [];
 
   const filters = { period: selectedPeriod, type: selectedType, query: searchQuery };
 
@@ -367,10 +403,10 @@ const Transaction = () => {
 
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Confirmed" count={confirmedTxns.length} total={sumAmount(confirmedTxns)} accent="green" />
-        <StatCard label="Declined"  count={rejectedTxns.length}  total={sumAmount(rejectedTxns)}  accent="red"   />
-        <StatCard label="Pending"   count={pendingTxns.length}   total={sumAmount(pendingTxns)}   accent="amber" />
-        <StatCard label="Total"     count={allTxns.length}                                         accent="gray"  />
+        <StatCard label="Confirmed" count={approvedTransaction.count} accent="green" />
+        <StatCard label="Declined"  count={declinedTransaction.count} accent="red"   />
+        <StatCard label="Pending"   count={pendingTransaction.count}  accent="amber" />
+        <StatCard label="Total"     count={allTransaction.count}      accent="gray"  />
       </div>
 
       {/* ── Search & filters ── */}
@@ -398,8 +434,6 @@ const Transaction = () => {
             Filters
             {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
-
-        
         </div>
 
         {showFilters && (
@@ -420,24 +454,6 @@ const Transaction = () => {
                 <option value="year">Last Year</option>
               </select>
             </div>
-            <div>
-              <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">
-                Remark / Type
-              </label>
-              <select
-                value={selectedType}
-                onChange={e => setSelectedType(e.target.value)}
-                className="w-full p-2.5 text-sm border border-gray-200 rounded-xl
-                  focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/20 transition"
-              >
-                <option value="all">All Types</option>
-                <option value="balance_funding">Wallet Top-up</option>
-                <option value="credit_thrift_cooperative">Cooperative Savings</option>
-                <option value="housing_cooperative">Housing Savings</option>
-                <option value="repay_housing_installment">Housing Repayment</option>
-                <option value="repay_credit_thrift">Loan Repayment</option>
-              </select>
-            </div>
           </div>
         )}
       </div>
@@ -450,6 +466,14 @@ const Transaction = () => {
           : Object.entries(groupByMonth(filteredPending)).map(([m, txns]) => (
               <MonthGroup key={m} monthYear={m} transactions={txns} variant="pending" onSelect={setSelectedTransaction} />
             ))}
+        {pendingTransaction.next && (
+          <div
+            onClick={() => loadMore('pending')}
+            className="mt-2 h-[20px] w-[20px] bg-yellow-800 mx-auto rounded-full cursor-pointer"
+          >
+            <FaSortDown className={`mx-auto text-white ${loadingMore.pending ? 'animate-spin' : ''}`} />
+          </div>
+        )}
       </section>
 
       {/* ── Confirmed section ── */}
@@ -460,6 +484,14 @@ const Transaction = () => {
           : Object.entries(groupByMonth(filteredConfirmed)).map(([m, txns]) => (
               <MonthGroup key={m} monthYear={m} transactions={txns} variant="confirmed" onSelect={setSelectedTransaction} />
             ))}
+        {approvedTransaction.next && (
+          <div
+            onClick={() => loadMore('confirmed')}
+            className="mt-2 h-[20px] w-[20px] bg-cooperative-dark mx-auto rounded-full cursor-pointer"
+          >
+            <FaSortDown className={`mx-auto text-white ${loadingMore.confirmed ? 'animate-spin' : ''}`} />
+          </div>
+        )}
       </section>
 
       {/* ── Declined section ── */}
@@ -470,6 +502,14 @@ const Transaction = () => {
           : Object.entries(groupByMonth(filteredRejected)).map(([m, txns]) => (
               <MonthGroup key={m} monthYear={m} transactions={txns} variant="rejected" onSelect={setSelectedTransaction} />
             ))}
+        {declinedTransaction.next && (
+          <div
+            onClick={() => loadMore('rejected')}
+            className="mt-2 h-[20px] w-[20px] bg-[#300000] mx-auto rounded-full cursor-pointer"
+          >
+            <FaSortDown className={`mx-auto text-white ${loadingMore.rejected ? 'animate-spin' : ''}`} />
+          </div>
+        )}
       </section>
 
     </div>

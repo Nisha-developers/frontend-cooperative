@@ -9,10 +9,10 @@ const CodeSenda = () => {
   const {fetchUser, user,login} = useAuth();
   const location = useLocation();
   const email = location.state?.email;
-  console.log(email);
+  
   const navigate = useNavigate();
   const handleResendCode = async () => {
-  console.log('I am clicked')
+
   try {
     const response =await fetch(`${import.meta.env.VITE_API_URL}/api/users/resend-code/`, {
       method: "POST",
@@ -58,7 +58,7 @@ const CodeSenda = () => {
     const data = await response.json();
 
     if (response.ok) {
-      console.log('user has already signed in', data);
+     
       setLoading(true);
       let accessToken = data.access
       fetchUser(accessToken);

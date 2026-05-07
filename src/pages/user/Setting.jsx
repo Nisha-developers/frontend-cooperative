@@ -18,12 +18,14 @@ import PopupMessage from '../../components/ui/PopupMessage';
 
 const Settings = () => {
   const [saved, setSaved] = useState(false);
-  const {user, getAccessToken} = useAuth();
+  const {user, getAccessToken,refreshAccessToken} = useAuth();
   const [editMode, setEditMode] = useState(true)
   const [message, setMessage] = useState('');
   const [title, setTitle] = useState('');
   const [type, setType] = useState('')
   const [open, setOpen] = useState('');
+  const [avatar, setAvatar] = useState(null);
+const [preview, setPreview] = useState(user?.profile?.avatar || '');
   const [profile, setProfile] = useState({
     fullName: user?.user?.full_name,
     email: user?.user?.email,
@@ -41,7 +43,54 @@ const Settings = () => {
 
 
 
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  setAvatar(file);
+  setPreview(URL.createObjectURL(file)); // preview instantly
+};
+const uploadAvatar = async () => {
+  if (!avatar) return;
+
+  const token = getAccessToken();
+  const formData = new FormData();
+
+  formData.append('image', avatar);
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/users/profile/avatar/`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+          // ❌ DO NOT set Content-Type manually
+        },
+        body: formData
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+console.log(data);
+      throw new Error(data?.message || 'Avatar upload failed');
+    }
+
+    setTitle('Success');
+    setMessage('Profile image updated successfully');
+    setType('success');
+    setOpen(true);
+
+  } catch (err) {
+    console.log(err);
+    setTitle('Error');
+    setMessage(err.message);
+    setType('error');
+    setOpen(true);
+  }
+};
 
    
 
@@ -61,6 +110,7 @@ const Settings = () => {
 
   const handleSave =  async() => {
      setSaved(true);
+     await uploadAvatar();
     setTimeout(() => setSaved(false), 2500);
     const token = getAccessToken();
   try {
@@ -82,9 +132,12 @@ const Settings = () => {
 })
 
     const data = await res.json();
-    console.log(data);
+  
 
     if (!res.ok) {
+       if(res.status === 401){
+        refreshAccessToken();
+      }
       throw new Error(data?.message || 'Update failed');
     }
 
@@ -286,7 +339,36 @@ const Settings = () => {
                 />
               </div>
               
+              
             </div>
+            <div className="flex flex-col items-center justify-center">
+  <label className="text-sm font-medium text-cooperative-dark mb-2">
+    Profile Image
+  </label>
+
+  <div className="relative w-24 h-24">
+    <img
+      src={preview || 'https://via.placeholder.com/100'}
+      alt="avatar"
+      className="w-full h-full object-cover rounded-full border"
+    />
+
+    {!editMode && (
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="absolute inset-0 opacity-0 cursor-pointer"
+      />
+    )}
+  </div>
+
+  {!editMode && (
+    <p className="text-xs text-gray-500 mt-2">
+      Click image to change
+    </p>
+  )}
+</div>
           </div>
         </div>
       </div>

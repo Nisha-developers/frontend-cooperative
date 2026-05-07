@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSale } from '../../context/SaleContext';
 import PopupMessage from '../ui/PopupMessage';
 
-const ApartmentList = ({ valueApartMent }) => {
+const ApartmentList = ({ valueApartMent, titles, allowDeleteEdit, showAll }) => {
   const [detailInfo, setDetailInfo] = useState({});
   const [detailShown, setDetailShow] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -21,17 +21,21 @@ const ApartmentList = ({ valueApartMent }) => {
 
   const { getAccessToken } = useAuth();
   const { setSales, viewDetails } = useSale();
+
   const token = getAccessToken();
+
 
   // ── Filter logic ─────────────────────────────────────────────────────────────
   const filtered = filter === 'all'
-    ? valueApartMent
-    : valueApartMent.filter(item => item.listing_type === filter);
-
+  ? valueApartMent
+  : filter === 'land'
+    ? valueApartMent.filter(item => item.property_type === 'land')           // land → check property_type
+    : valueApartMent.filter(item => item.listing_type === filter &&          // sale/rent → check listing_type
+                                    item.property_type !== 'land');          // exclude land from sale tab
   // ── View details ─────────────────────────────────────────────────────────────
   const viewDetail = async(id) =>{
        const moreDetail =await viewDetails(id);
-       console.log(moreDetail);
+      
         setDetailInfo(moreDetail);
       setDetailShow(true);  
   }
@@ -116,6 +120,7 @@ const ApartmentList = ({ valueApartMent }) => {
       setError('error');
       setTitle('Delete Error');
       console.error('Error deleting listing:', error.message);
+      console.log(error)
     }
   };
 
@@ -152,6 +157,7 @@ const ApartmentList = ({ valueApartMent }) => {
   // ── Card renderer — shows only fields relevant to the listing type ────────────
   const renderCardBody = (val) => {
     const type = val.property_type === 'land' ? 'land' : val.listing_type; // 'sale' | 'rent' | 'land'
+    
 
     return (
       <>
@@ -212,19 +218,19 @@ const ApartmentList = ({ valueApartMent }) => {
     <div>
       {/* ── Filter bar ─────────────────────────────────────────────────────── */}
       <div className='flex justify-between items-center max-sm:flex-col max-sm:items-start mb-4 mt-4'>
-        <h1 className='font-bold text-[clamp(1.5rem,2vw,2.5rem)]'>Available Listings</h1>
-        <div className='flex gap-x-2 items-center max-sm:mt-3'>
+        <h1 className='font-bold text-[clamp(1.5rem,2vw,2.5rem)]'>{titles}</h1>
+        {showAll && <div className='flex gap-x-2 items-center max-sm:mt-3'>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className='border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-cooperative-teal'
           >
             <option value="all">All ({valueApartMent.length})</option>
-            <option value="sale">Sale ({valueApartMent.filter(i => i.listing_type === 'sale').length})</option>
+            <option value="sale">Sale ({valueApartMent.filter(i => i.listing_type === 'sale' && i.property_type === 'house').length})</option>
             <option value="rent">Rent ({valueApartMent.filter(i => i.listing_type === 'rent').length})</option>
             <option value="land">Land ({valueApartMent.filter(i => i.property_type === 'land').length})</option>
           </select>
-        </div>
+        </div>}
       </div>
 
       {/* ── Grid ───────────────────────────────────────────────────────────── */}
@@ -240,7 +246,7 @@ const ApartmentList = ({ valueApartMent }) => {
           >
             {/* Image */}
             <div className='relative m-2'>
-              <img src={image} alt="" className='h-[200px] w-full rounded-2xl object-cover' />
+              <img src={val?.images[0]?.image_url} alt="" className='h-[200px] w-full rounded-2xl object-cover' />
               <div className='absolute h-8 w-8 rounded-full right-3 top-2 bg-white flex items-center justify-center text-cooperative-teal'>
                 <FaLocationDot />
               </div>
@@ -275,6 +281,7 @@ const ApartmentList = ({ valueApartMent }) => {
           onDelete={handleDelete}
           onEdit={handleEdit}
           samplePropertyData={detailInfo}
+          isDeleteOrEdit = {allowDeleteEdit}
         />,
         document.body
       )}

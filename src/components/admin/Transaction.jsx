@@ -3,17 +3,19 @@ import { useAuth } from '../../context/AuthContext';
 import { createPortal } from 'react-dom';
 import PopupMessage from '../ui/PopupMessage';
 import { Forward } from 'lucide-react';
+import { RiCloseLine } from 'react-icons/ri';
 
 
 const AdminTransactions = () => {
   
 
-  const [filter, setFilter] = useState('all'); // all, pending, accepted, declined
+  const [filter, setFilter] = useState('all'); 
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalAction, setModalAction] = useState(''); // accept or decline
+  const [modalAction, setModalAction] = useState(''); 
   const [declineReason, setDeclineReason] = useState('');
   const {getAccessToken} = useAuth();
+  
   const [transactions, setTransactions] = useState([]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -22,10 +24,11 @@ const AdminTransactions = () => {
   const [count, setCount] = useState(0);
   const [nexts, setnexts] = useState(null);
   const [prevs, setprevs] = useState(null);
-const [pendingCount, setPendingCount] = useState(0);
-const [acceptedCount, setAcceptedCount] = useState(0);
-const [declinedCount, setDeclinedCount] = useState(0);
-  
+  const[showReceipt, setshowReceipt] = useState(false);
+const [pending, setPending] = useState({});
+const [confirmed, setConfirmed] = useState({});
+const [decline, setDecline] = useState({});
+const [selectImage, setSelectedImage] = useState('');
 
   const handleAccept = (transaction) => {
     setSelectedTransaction(transaction);
@@ -34,30 +37,47 @@ const [declinedCount, setDeclinedCount] = useState(0);
   };
 const getWallets = async (val = '', status = '') => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/wallet/admin/transactions${val}${status}`,{
-       headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getAccessToken()}`,
-          },
-        }
-    );
+    // Build URL correctly
+    const url = val.startsWith('http')
+      ? val  // full URL from next/prev, use as-is
+      : `${import.meta.env.VITE_API_URL}/api/wallet/admin/transactions${val}${status}`;
 
-    const data = await res.json(); 
-    
-if (!status) {
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error("Server error");
+
+    // Detect which bucket to update — check status param OR the URL itself
+    const isPending   = status === '?status=PENDING'   || url.includes('status=PENDING');
+    const isConfirmed = status === '?status=CONFIRMED' || url.includes('status=CONFIRMED');
+    const isRejected  = status === '?status=REJECTED'  || url.includes('status=REJECTED');
+
+    if (isPending) {
+      setPending(data);
+      setnexts(data.next);
+      setprevs(data.previous);
+    } else if (isConfirmed) {
+      setConfirmed(data);
+      setnexts(data.next);
+      setprevs(data.previous);
+    } else if (isRejected) {
+      setDecline(data);
+      setnexts(data.next);
+      setprevs(data.previous);
+    } else {
       setCount(data.count);
       setnexts(data.next);
       setprevs(data.previous);
       setTransactions(data.results);
     }
-    
 
-    if (!res.ok) {
-      throw new Error("Server error");
-    }
-    
-   console.log(data);
-   return data;
+
+    return data;
   } catch (error) {
     console.log("An error has occurred. please try again", error);
   }
@@ -76,8 +96,8 @@ const Approve = async (uid, action, value) => {
     );
 
     const data = await res.json(); 
-console.log(data)
-    console.log(res);
+
+ 
 
     if (!res.ok) {
       if(res.status === 400){
@@ -103,7 +123,7 @@ console.log(data)
       setTitle('Approval Success');
       setType('success');
       setTransactions((prev)=>[...prev, data])
-      console.log(transactions);
+  
     }
     else{
         setOpen(true);
@@ -111,7 +131,7 @@ console.log(data)
       setTitle('Decline Success');
       setType('success');
       setTransactions((prev)=>[...prev, data])
-      console.log(transactions);
+     
     }
   
   } catch (error) {
@@ -122,73 +142,116 @@ console.log(data)
       setType('error');
   }
 };
+const viewReceipt = (data) =>{
+  setshowReceipt(true);
+setSelectedImage(data?.payment_proof?.image_url)
+  
+
+}
 
 useEffect(() => {
   const fetchAll = async () => {
     await getWallets(); 
+    await getWallets('', '?status=PENDING');
+    await getWallets('', '?status=CONFIRMED');
+    await getWallets('', '?status=REJECTED')
+    if(filter === 'all'){
+    await getWallets(); 
+    }
 
-    const pending = await getWallets('', '?status=PENDING');
-    const confirmed = await getWallets('', '?status=CONFIRMED');
-    const rejected = await getWallets('', '?status=REJECTED');
-
-    if (pending) setPendingCount(pending.count);
-    if (confirmed) setAcceptedCount(confirmed.count);
-    if (rejected) setDeclinedCount(rejected.count);
+    if(filter === 'pending'){
+await getWallets('', '?status=PENDING');
+    }
+    if(filter === 'confirmed'){
+await getWallets('', '?status=CONFIRMED');
+    }
+    if(filter === 'rejected'){
+await getWallets('', '?status=REJECTED')
+    }
+    
+    
   };
 
   fetchAll();
-}, []);
-console.log(pendingCount);
-console.log(acceptedCount);
-console.log(declinedCount);
-const next =  () =>{
-  let nextValue = nexts;
-  if(!nextValue){
-      setOpen(true);
+}, [filter]);
+
+const next = () => {
+  let nextValue;
+  if (filter === 'pending')        nextValue = pending.next;
+  else if (filter === 'confirmed') nextValue = confirmed.next;
+  else if (filter === 'rejected')  nextValue = decline.next;
+  else                             nextValue = nexts;
+
+  if (!nextValue) {
+    setOpen(true);
     setTitle('No next page');
     setMessage('You are on the last page');
     setType('error');
     return;
   }
-  const nextQuery = nextValue.slice(51);
-  getWallets(nextQuery);
-}
+  getWallets(nextValue); // full URL — getWallets detects the right bucket from URL
+};
 
-const prev =  () =>{
-  let prevValue = prevs;
-  if(!prevValue){
+const prev = () => {
+  let prevValue;
+  if (filter === 'pending')        prevValue = pending.previous;
+  else if (filter === 'confirmed') prevValue = confirmed.previous;
+  else if (filter === 'rejected')  prevValue = decline.previous;
+  else                             prevValue = prevs;
+
+  if (!prevValue) {
     setOpen(true);
     setTitle('No previous page');
     setMessage('You are on the first page');
     setType('error');
     return;
   }
-  const prevQuery = prevValue.slice(51);
-  getWallets(prevQuery);
-}
+  getWallets(prevValue); // full URL — getWallets detects the right bucket from URL
+};
   const handleDecline = (transaction) => {
     setSelectedTransaction(transaction);
     setModalAction('decline');
     setShowModal(true);
   };
 
-  const confirmAction = () => {
-    if (modalAction === 'accept') {
-    Approve(selectedTransaction.uid, 'approve' );
-     console.log('accept');
-     setTransactions(transactions.filter((val)=> val.uid !== selectedTransaction.uid))
-      
-     
-     
-    } else if (modalAction === 'decline') {
-     Approve(selectedTransaction.uid, 'reject', {rejection_reason: declineReason});
-setTransactions(transactions.filter((val)=> val.uid !== selectedTransaction.uid));
+ const confirmAction = () => {
+  if (modalAction === 'accept') {
+    Approve(selectedTransaction.uid, 'approve');
+    
+    // Remove from pending list and decrease pending count
+    setPending(prev => ({
+      ...prev,
+      count: prev.count - 1,
+      results: prev.results.filter(val => val.uid !== selectedTransaction.uid)
+    }));
+    setConfirmed(prev =>({
+      ...prev,
+      count: prev.count + 1
+    }))
+    // Remove from all list too
+    setTransactions(prev => prev.filter(val => val.uid !== selectedTransaction.uid));
 
-    }
-    setShowModal(false);
-    setSelectedTransaction(null);
-    setDeclineReason('');
-  };
+  } else if (modalAction === 'decline') {
+    Approve(selectedTransaction.uid, 'reject', { rejection_reason: declineReason });
+
+   
+    setPending(prev => ({
+      ...prev,
+      count: prev.count - 1,
+      results: prev.results.filter(val => val.uid !== selectedTransaction.uid)
+    }));
+    setDecline(prev =>({
+      ...prev,
+      count: prev.count + 1
+    }))
+   
+    setTransactions(prev => prev.filter(val => val.uid !== selectedTransaction.uid));
+  }
+
+  setShowModal(false);
+  setSelectedTransaction(null);
+  setDeclineReason('');
+};
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -238,15 +301,18 @@ const getRemark = (getval) =>{
     }
   };
 
-  const filteredTransactions = transactions.filter(trans => {
-    if (filter === 'all') return true;
-    return trans.status === filter.toUpperCase();
-  });
+  let filteredTransactions;
+  if(filter === 'all') filteredTransactions = transactions; 
+  if(filter === 'pending') filteredTransactions = pending.results;
+ 
+  if(filter === 'confirmed')filteredTransactions = confirmed.results;
+  if(filter === 'rejected') filteredTransactions = decline.results;
 
 
 
   return (
-    <div className="bg-[#FDF6EC] min-h-screen p-6">
+    <div className='relative min-h-screen'>
+    <div className={`${showReceipt ? 'blur-sm' : ''} transition-all`}>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#003000] mb-2">Transaction Management</h1>
@@ -271,7 +337,7 @@ const getRemark = (getval) =>{
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#003000]/60 text-sm">Pending</p>
-              <p className="text-2xl font-bold text-[#F57C00]">{pendingCount}</p>
+              <p className="text-2xl font-bold text-[#F57C00]">{pending.count}</p>
             </div>
             <div className="w-10 h-10 bg-[#F57C00]/10 rounded-full flex items-center justify-center">
               <span className="text-[#F57C00] text-xl">⏳</span>
@@ -283,7 +349,7 @@ const getRemark = (getval) =>{
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#003000]/60 text-sm">Accepted</p>
-              <p className="text-2xl font-bold text-[#2E7D32]">{acceptedCount}</p>
+              <p className="text-2xl font-bold text-[#2E7D32]">{confirmed.count}</p>
             </div>
             <div className="w-10 h-10 bg-[#2E7D32]/10 rounded-full flex items-center justify-center">
               <span className="text-[#2E7D32] text-xl">✅</span>
@@ -295,7 +361,7 @@ const getRemark = (getval) =>{
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#003000]/60 text-sm">Declined</p>
-              <p className="text-2xl font-bold text-red-600">{declinedCount}</p>
+              <p className="text-2xl font-bold text-red-600">{decline.count}</p>
             </div>
             <div className="w-10 h-10 bg-red-600/10 rounded-full flex items-center justify-center">
               <span className="text-red-600 text-xl">❎</span>
@@ -337,8 +403,8 @@ const getRemark = (getval) =>{
           filteredTransactions.map((transaction) => (
             <div
               key={transaction.uid}
-              className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-[#F57C00]"
-            >
+              className={`bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-[#F57C00] ${transaction?.payment_proof ? 'cursor-pointer': ''}`}
+            onClick={()=>transaction?.payment_proof ? viewReceipt(transaction): ''}>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 {/* Transaction Info */}
                 <div className="flex-1">
@@ -375,14 +441,17 @@ const getRemark = (getval) =>{
                         })}
                       </span>
                     </div>
-                    <div className="md:col-span-2">
-                      <span className="text-[#003000]/60">Remark:</span>
-                      <span className="ml-2 text-[#2E7D32] font-medium">{getRemark(transaction.remark)}</span>
-                    </div>
                     <div>
                       <span className="text-[#003000]/60">Email:</span>
                       <span className="ml-2 text-[#003000] text-sm">{transaction.created_by}</span>
                     </div>
+                     
+                    {transaction.source &&  <div>
+                      <span className="text-[#003000]/60">Source:</span>
+                      <span className="ml-2 text-[#003000] text-sm">{transaction.source.replace('_', ' ')}</span>
+                    </div> }
+                    
+                    
                     {transaction.decline_reason && (
                       <div className="md:col-span-3">
                         <span className="text-red-600/60">Decline reason:</span>
@@ -481,6 +550,11 @@ const getRemark = (getval) =>{
         </div>
       )}
       {createPortal(<PopupMessage isOpen={open} message={message} title={title} type={type} onClose={()=>{setOpen(false)}}/>, document.body)}
+        {showReceipt && createPortal(<div className='fixed top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] h-[80vh] max-w-[800px] w-[90%] z-[1000000] bg-white rounded-md'>
+          <div className='' onClick={()=>setshowReceipt(false)}><RiCloseLine size={30} className='ml-auto block cursor-pointer'/></div>
+          <img src={selectImage} className='w-full h-full object-contain' alt="Receipt" />
+        </div>, document.body)}
+    </div>
     </div>
   );
 };

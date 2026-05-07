@@ -34,7 +34,7 @@ const [open, setOpen] = useState(false)
       return; 
     }
     e.preventDefault();
-    console.log(data)
+
     emailjs.send(
     'service_g165c0f',
     'template_ffngpu3',

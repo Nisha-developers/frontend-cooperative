@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/context/AuthContext'
-import { NotificationProvider } from '@/context/NotificationContext'
+
 import { SaleProvider } from '@/context/SaleContext';
 
 
@@ -14,17 +14,14 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 
 // User
 
-import PaymentUploadPage from '@/pages/user/PaymentUploadPage'
-import UserNotificationsPage from '@/pages/user/UserNotificationsPage'
-import ProfileSection from '@/pages/user/ProfileSection'
+
 
 // Admin
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
-import ManageApartmentsPage from '@/pages/admin/ManageApartmentsPage'
-import AddEditApartmentPage from '@/pages/admin/AddEditApartmentPage'
-import ViewBookingRequestsPage from '@/pages/admin/ViewBookingRequestsPage'
-import ReviewPaymentsPage from '@/pages/admin/ReviewPaymentsPage'
-import ManageUsersPage from '@/pages/admin/ManageUsersPage'
+
+
+
+
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
@@ -45,14 +42,17 @@ import VerifyPassworda from './components/auth/VerifyPassworda'
 import ResetPassworda from './components/auth/ResetPassworda'
 import HousingCooperativeBody from './pages/public/HousingCooperativeBody';
 import CreditAndThriftBody from './pages/public/CreditAndThriftBody';
+import { PurchaseProvider } from './context/PurchaseProvider';
+import { RentProvider } from './context/RentProvider';
 
 
 function App() {
  
   return (
     <AuthProvider>
-      <NotificationProvider>
         <SaleProvider>
+          <PurchaseProvider >
+            <RentProvider >
         <Routes>
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
@@ -84,23 +84,24 @@ function App() {
 
          
         
-          <Route path="/payment/:bookingId" element={<ProtectedRoute><PaymentUploadPage /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfileSection /></ProtectedRoute>} />
+          
+
 
           {/* Admin (protected + admin role) */}
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
-          <Route path="/admin/apartments" element={<AdminRoute><ManageApartmentsPage /></AdminRoute>} />
-          <Route path="/admin/apartments/new" element={<AdminRoute><AddEditApartmentPage /></AdminRoute>} />
-          <Route path="/admin/apartments/edit/:id" element={<AdminRoute><AddEditApartmentPage /></AdminRoute>} />
-          <Route path="/admin/bookings" element={<AdminRoute><ViewBookingRequestsPage /></AdminRoute>} />
-          <Route path="/admin/payments" element={<AdminRoute><ReviewPaymentsPage /></AdminRoute>} />
-          <Route path="/admin/users" element={<AdminRoute><ManageUsersPage /></AdminRoute>} />
+         
+         
+         
+         
+       
+        
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </RentProvider>
+        </PurchaseProvider>
         </SaleProvider>
-      </NotificationProvider>
+     
     </AuthProvider>
   )
 }

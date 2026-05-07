@@ -6,6 +6,7 @@ import { createPortal } from "react-dom"
 import { Link } from 'react-router-dom'
 import { FaCaretUp } from "react-icons/fa";
 import Dropdown from '../ui/Dropdown'
+import { useAuth } from '../../context/AuthContext'
 // Importation of All the react Components Ends
 
 const navLinks = [
@@ -34,7 +35,24 @@ const Navbar = ({bgvar, setbgvar}) => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("")
+  const {user} = useAuth()
+ 
+
+  
   const menuRef = useRef(null)
+const determinPage =() =>{
+  let navigatePage = '';
+  if(!user){
+        navigatePage = '/login'
+  }
+  else if(!(user?.user?.is_admin)){
+    navigatePage = '/user'
+  }
+  else{
+    navigatePage = '/admin'
+  }
+  return navigatePage
+}
 
   // Listen for scroll to add background blur + shadow
   useEffect(() => {
@@ -188,7 +206,7 @@ function handleDropdownOpen() {
           <div className="flex items-center gap-x-3">
             {/* Sign In — ghost button */}
             <Link
-              to="/login"
+              to={determinPage()}
               className="hidden sm:inline-flex px-5 py-2 text-sm font-medium text-cooperative-cream
                 border border-cooperative-orange/40 rounded-lg
                 bg-cooperative-cream/5 backdrop-blur-sm

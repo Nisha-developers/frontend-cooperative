@@ -52,7 +52,7 @@ const handleSubmit = async (e) => {
       const errorData = await response.json().catch(() => null);
       throw new Error(errorData?.message || 'Request failed');
     }
-console.log(typeof(logout))
+
     setMessage({
       type: 'success',
       text: ` Great! we have sent a code to your email. Check your inbox and set a new password`,
@@ -71,7 +71,6 @@ setTimeout(() => {
     
 
   } catch (error) {
-    console.log(error);
     setMessage({
       type: 'error',
       text: 'Unable to process request. Please try again.',

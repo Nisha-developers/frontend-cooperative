@@ -1,5 +1,6 @@
 import React from 'react';
 import { CiMenuBurger, CiLogout, CiCircleRemove} from "react-icons/ci";
+import { useAuth } from '../../context/AuthContext';
 import { 
   RiHomeOfficeLine, 
   RiShoppingBagLine,
@@ -10,22 +11,22 @@ import {
   RiSettings4Line,
   RiWallet3Line,
   RiHome2Line,
-  RiDashboardLine
+  RiDashboardLine,
+  RiFileList3Line 
 } from "react-icons/ri";
 
 
 const housingServices = [
   { id: 1, link: 'ControlHousing', label: 'Control', icon: RiHomeOfficeLine },
-  { id: 2, link: 'manageRequest', label: 'Request', icon: RiShoppingBagLine },
+  { id: 2, link: 'manageRequest', label: 'Request', icon: RiFileList3Line },
+   { id: 3, link: 'rentRequest', label: 'Rent Request', icon: RiFileList3Line },
 ];
 const Cooperative = [
-  { id: 1, link: 'managehousing', label: 'Housing', icon: RiBuildingLine },
   { id: 2, link: 'managecredit', label: 'Credit & Thrift', icon: RiBankLine }
 ];
 
 const Others = [
    { id: 1, link: 'managemember', label: 'Member', icon: RiBuildingLine },
-  { id: 2, link: 'manageagricultural', label: 'Agricultural', icon: RiSeedlingLine },
   { id: 3, link: 'transaction', label: 'Transactions', icon: RiHistoryLine },
 ];
 
@@ -34,6 +35,10 @@ const  AdminDashbordaside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMob
     if (window.innerWidth < 1024) {
       setMobileMenuOpen(false);
     }
+  };
+const {logout} = useAuth();
+const handleLogout = () => {
+    logout();
   };
   const userValue = componentUserValue.user;
  
@@ -166,7 +171,7 @@ const  AdminDashbordaside = ({ iscollapse, setiscollapse, mobileMenuOpen, setMob
       {/* Logout Button */}
       <div className="px-4 mt-6">
         <button 
-          onClick={handleLinkClick}
+          onClick={()=>{handleLinkClick(); handleLogout();}}
           className="flex items-center w-full px-4 py-3 text-[#003000] hover:text-[#F57C00] transition-all duration-300 rounded-xl hover:bg-[#FDF6EC] group"
         >
           <CiLogout size={20} className="flex-shrink-0 transition-transform group-hover:scale-110" />

@@ -4,6 +4,7 @@ import { CiBellOn, CiMenuBurger } from "react-icons/ci";
 const DashboaHeader = ({ mobileMenuOpen, setMobileMenuOpen,  componentUserValue, iscollapse }) => {
   const walletValue = componentUserValue.wallet;
   const userValue = componentUserValue.user;
+  const avatar = componentUserValue?.profile?.avatar_url;
  
  
   
@@ -24,24 +25,21 @@ const DashboaHeader = ({ mobileMenuOpen, setMobileMenuOpen,  componentUserValue,
 
       {/* Right Section */}
       <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-        {/* Notification */}
-        <button className="relative p-2 text-[#003000] hover:bg-[#FDF6EC] rounded-xl transition-all duration-300 group">
-          <CiBellOn size={24} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-[#F57C00] rounded-full animate-pulse" />
-        </button>
+       
+       
 
         {/* User Menu */}
         <button className="flex items-center gap-3 p-2 hover:bg-[#FDF6EC] rounded-xl transition-all duration-300 group">
           <div className="relative">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#2E7D32] flex items-center justify-center text-[#FDF6EC] font-bold text-lg">
+          {avatar? <img src={avatar} className='h-[50px] w-[50px] object-cover rounded-full' /> :   <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#2E7D32] flex items-center justify-center text-[#FDF6EC] font-bold text-lg">
               {
   userValue.full_name
     ?.split(' ')
     .map(name => name[0]?.toUpperCase())
     .join('')
 }
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#F57C00] rounded-full border-2 border-white" />
+            </div> }
+            <div className={`absolute ${avatar ? 'bottom-0 right-0': '-bottom-1 -right-1 '}  w-3 h-3 bg-[#F57C00] rounded-full border-2 border-white`} />
           </div>
           
           <div className="hidden md:block text-left">

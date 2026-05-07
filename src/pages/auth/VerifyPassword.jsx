@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 
 const VerifyPassword = () => {
@@ -8,7 +9,8 @@ const VerifyPassword = () => {
   const [message, setMessage] = useState('');
   const [isValid, setIsValid] = useState(false);
   const email = location.state?.email;
-  console.log(email);
+  const {refreshAccessToken} = useAuth();
+
   const navigate  = useNavigate();
   
 
@@ -73,7 +75,11 @@ const handleVerify = async () => {
       });
     }
  else {
-      setMessage(data?.message || 'Invalid verification code. Please try again.');
+   if(response.status === 401){
+        refreshAccessToken();
+      }
+
+      setMessage(data[Object.keys(data)] || 'Invalid verification code. Please try again.');
       setIsValid(false);
     }
   } catch (error) {

@@ -8,7 +8,7 @@ const VerifyPassword = () => {
   const [message, setMessage] = useState('');
   const [isValid, setIsValid] = useState(false);
   const email = location.state?.email;
-  console.log(email);
+
   const navigate  = useNavigate();
   
 

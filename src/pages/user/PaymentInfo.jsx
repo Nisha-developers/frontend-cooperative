@@ -17,10 +17,11 @@ import PopupForm from '../../components/ui/PopupForm';
 import useWalletStore from '../../hooks/useWallet';
 import { useAuth } from '../../context/AuthContext';
 import PopupMessage from '../../components/ui/PopupMessage';
+import useLoan from '../../hooks/useLoan';
 const PaymentInfo = () => {
   const [copiedBank, setCopiedBank] = useState(null);
   const [copiedMobile, setCopiedMobile] = useState(null);
-const {getAccessToken} = useAuth();
+const {getAccessToken, user, refreshAccessToken} = useAuth();
 const token = getAccessToken();
 const error = useWalletStore((state)=>state.error);
 const title = useWalletStore((state)=>state.title);
@@ -29,9 +30,47 @@ const open = useWalletStore((state)=>state.open);
 const  fundWallet = useWalletStore((state)=>state.fundWallet);
 const closeMessage = useWalletStore((state)=>state.closeMessage);
 
+const errorlo = useWalletStore((state)=>state.error);
+const titlelo = useWalletStore((state)=>state.title);
+const messagelo = useWalletStore((state)=>state.message);
+const openlo = useWalletStore((state)=>state.open);
+const closeMessagelo = useWalletStore((state)=>state.closeMessage);
+const repayLoan = useLoan((state)=>state.repayLoan);
 
 
+const receiptProof = async (uid, img) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", img); // 
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/wallet/transactions/${uid}/proof/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        
+        },
+        body: formData,
+      }
+    );
 
+    const data = await res.json();
+
+    if (!res.ok) {
+      if(res.status === 401){
+        refreshAccessToken();
+      }
+      console.log(data);
+      throw new Error(data.message || "There is an error");
+
+
+    }
+
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 
 
@@ -85,7 +124,7 @@ const closeMessage = useWalletStore((state)=>state.closeMessage);
       hint: "Minimum amount is ₦100"
     },
     {
-      name: "source",
+      name: "modeOfPayment",
       label: "Mode of Payment",
       type: "radio",
       required: true,
@@ -96,22 +135,9 @@ const closeMessage = useWalletStore((state)=>state.closeMessage);
     }
   ];
 
-  // ── STEP 2 FIELDS: Purpose only (cash) OR Purpose + Receipt (transfer) ──
-  const purposeField = {
-    name: "remark",
-    label: "Purpose of Payment",
-    type: "select",
-    required: true,
-    options: [
-      { label: "Housing Cooperative", value: "housing_cooperative" },
-      { label: "Credit & Thrift Cooperative", value: "credit_thrift_cooperative" },
-      { label: "Account Balance Funding", value: "balance_funding" },
-      { label: "Loan Repayment (Credit & Thrift)", value: "repay_credit_thrift" },
-      { label: "Loan Repayment (Housing Installment)", value: "repay_housing_installment" }
-    ],
-    hint: "Select your purpose of payment"
-  };
-/*
+ 
+   
+
   const receiptField = {
     name: "receipt",
     label: "Upload Receipt",
@@ -120,12 +146,10 @@ const closeMessage = useWalletStore((state)=>state.closeMessage);
     accept: "image/png, image/jpeg, image/webp, application/pdf",
     hint: "Upload proof of payment (image or PDF)"
   };
-  */
+ 
 
   // If step1Data says transfer → show purpose + receipt, else purpose only
-  const step2Fields = step1Data?.source === "transfer"
-    ? [purposeField]// receiptField
-    : [purposeField];
+  const step2Fields = [receiptField];
 
   const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text);
@@ -144,22 +168,31 @@ const closeMessage = useWalletStore((state)=>state.closeMessage);
 
   // Step 1 done → save data, close step 1, open step 2
   function handleStep1Submit(data) {
-    setStep1Data(data);
+  setStep1Data(data);
+
+  const isTransfer = data.modeOfPayment === "transfer";
+
+  if (isTransfer) {
     setIsStep1Open(false);
     setTimeout(() => setIsStep2Open(true), 200);
+  } else {
+    const finalData = { amount: data.amount, source: 'USER_TOPUP' };
+    fundWallet(finalData, token);
+    setIsStep1Open(false);
   }
+}
 
   // Step 2 done → merge everything and submit
-  function handleStep2Submit(data) {
-    data.source = 'USER_TOPUP'
-    const finalData = { ...step1Data, ...data };
-    console.log("Final Payment Data:", finalData);
-    fundWallet(finalData, token)
-    setIsStep2Open(false)
-    console.log(open)
-    // TODO: send finalData to your API here
+  async function handleStep2Submit(data) {
+  data.source = 'TRANSFER';
+  
+  const finalData = { ...step1Data, ...data };
+  const paymentID = await fundWallet(finalData, token)
+  if (paymentID) {
+    await receiptProof(paymentID, data.receipt);
   }
-
+  setIsStep2Open(false);
+}
   return (
     <div className="space-y-8">
       {/* Header */}

@@ -6,13 +6,13 @@ import { useAuth } from '@/context/AuthContext';
 const CodeSend = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const {fetchUser, user,login} = useAuth();
+  const {fetchUser, user,login, refreshAccessToken} = useAuth();
   const location = useLocation();
   const email = location.state?.email;
-  console.log(email);
+
   const navigate = useNavigate();
   const handleResendCode = async () => {
-  console.log('I am clicked')
+
   try {
     const response =await fetch(`${import.meta.env.VITE_API_URL}/api/users/resend-code/`, {
       method: "POST",
@@ -27,6 +27,9 @@ const CodeSend = () => {
     const data = await response.json();
 
     if (!response.ok) {
+       if(response.status === 401){
+        refreshAccessToken();
+      }
       throw new Error(data.message || "Failed to resend code");
     }
    
@@ -58,7 +61,6 @@ const CodeSend = () => {
     const data = await response.json();
 
     if (response.ok) {
-      console.log('user has already signed in', data);
       setLoading(true);
       let accessToken = data.access
       fetchUser(accessToken);
@@ -69,6 +71,9 @@ const CodeSend = () => {
      },3000)
      
     } else {
+       if(response.status === 401){
+        refreshAccessToken();
+      }
       console.log("Verification failed", data);
       alert(data.message || "Invalid code");
     }

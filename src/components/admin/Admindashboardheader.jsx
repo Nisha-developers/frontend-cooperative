@@ -24,11 +24,7 @@ const Admindashboardheader = ({ mobileMenuOpen, setMobileMenuOpen,  componentUse
 
       {/* Right Section */}
       <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-        {/* Notification */}
-        <button className="relative p-2 text-[#003000] hover:bg-[#FDF6EC] rounded-xl transition-all duration-300 group">
-          <CiBellOn size={24} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-[#F57C00] rounded-full animate-pulse" />
-        </button>
+       
 
         {/* User Menu */}
         <button className="flex items-center gap-3 p-2 hover:bg-[#FDF6EC] rounded-xl transition-all duration-300 group">

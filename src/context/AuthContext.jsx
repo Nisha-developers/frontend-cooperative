@@ -48,26 +48,42 @@ export function AuthProvider({ children }) {
     }
   }, [refreshAccessToken])
 
-  const fetchUser = useCallback(async () => {
-    const data = await apiFetchWithRetry('/api/users/me/')
-    setUser(data)
-    return data
-  }, [apiFetchWithRetry])
+ const fetchUser = useCallback(async () => {
+  const data = await apiFetchWithRetry('/api/users/me/')
+  setUser(data)
+  return data
+}, [apiFetchWithRetry])
 
   const refreshAndFetchUser = useCallback(async () => {
-    try {
-      await refreshAccessToken()
-      await fetchUser()
-    } catch {
-      setAccessToken(null)
-      setUser(null)
+  try {
+    await refreshAccessToken()
+    const data = await apiFetchWithRetry('/api/users/me/')
+    
+    // If backend returns incomplete data, retry once after a short delay
+    if (!data.profile || !data.loan_eligibility) {
+      await new Promise(resolve => setTimeout(resolve, 800))
+      const retryData = await apiFetchWithRetry('/api/users/me/')
+      setUser(retryData)
+      return
     }
-  }, [refreshAccessToken, fetchUser])
+    
+    setUser(data)
+  } catch {
+    setAccessToken(null)
+    setUser(null)
+  }
+}, [refreshAccessToken, apiFetchWithRetry])
 
-  const login = useCallback((userData, accessToken) => {
-    setAccessToken(accessToken)
-    setUser(userData)
-  }, [])
+  const login = useCallback(async (userData, accessToken) => {
+  setAccessToken(accessToken)
+  setUser(userData) // set partial data first so app isn't blocked
+  try {
+    const fullUser = await apiFetchWithRetry('/api/users/me/')
+    setUser(fullUser) // immediately replace with full data
+  } catch {
+    // partial data already set, not critical
+  }
+}, [apiFetchWithRetry])
 
   const logout = useCallback(async () => {
     try {
@@ -97,6 +113,7 @@ export function AuthProvider({ children }) {
       fetchUser,
       refreshAccessToken,
       getAccessToken,
+      apiFetchWithRetry
     }}>
       {children}
     </AuthContext.Provider>

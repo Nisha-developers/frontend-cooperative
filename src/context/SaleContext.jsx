@@ -1,14 +1,17 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "./AuthContext";
 
 const SaleContext = createContext();
 
 export const SaleProvider = ({ children }) => {
   const [sales, setSales] = useState([]);
+  const {refreshAccessToken} = useAuth
 
   const fetchSales = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/`);
       const data = await res.json();
+      console.log(data);
       setSales(data);
     } catch (err) {
       console.log(err);
@@ -18,7 +21,10 @@ export const SaleProvider = ({ children }) => {
   const viewDetails = useCallback(async (id) => {  // ✅ stable reference
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/listings/${id}/`);
-      if (!res.ok) throw new Error("Failed to fetch listing details");
+      if (!res.ok){
+        refreshAccessToken()
+throw new Error("Failed to fetch listing details");
+      } 
       const data = await res.json();
       return data;
     } catch (error) {

@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { TbCurrencyNaira } from "react-icons/tb";
 import {
   RiMapPinLine,
-  RiPriceTagLine,
   RiWallet3Line,
   RiHeartLine,
   RiHeartFill,
@@ -12,11 +11,11 @@ import {
   RiBankLine,
   RiCheckboxCircleLine,
   RiSofaLine,
-  RiCalendarLine,
- 
-  RiDoorLine,
+  RiImageLine,
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiCloseLine,
 } from "react-icons/ri";
-import { MdOutlineSquareFoot } from "react-icons/md";
 import Navbar from '../layout/Navbar';
 import Footer from '../layout/Footer';
 import {
@@ -35,7 +34,141 @@ import { Copy } from 'lucide-react';
 
 const EASE = [0.22, 1, 0.36, 1];
 
+// ── Image Lightbox ────────────────────────────────────────────────────────────
+const ImageLightbox = ({ images, startIndex, title, onClose }) => {
+  const [current, setCurrent] = useState(startIndex ?? 0);
 
+  const prev = useCallback(
+    () => setCurrent((c) => (c - 1 + images.length) % images.length),
+    [images.length]
+  );
+  const next = useCallback(
+    () => setCurrent((c) => (c + 1) % images.length),
+    [images.length]
+  );
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [prev, next, onClose]);
+
+  return createPortal(
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-[9999] flex flex-col bg-black/95 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div>
+            <p className="text-white font-semibold text-sm capitalize">{title}</p>
+            <p className="text-white/50 text-xs mt-0.5">{current + 1} / {images.length}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          >
+            <RiCloseLine className="text-xl" />
+          </button>
+        </div>
+
+        {/* Main image */}
+        <div
+          className="flex-1 flex items-center justify-center relative px-4 min-h-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {images.length > 1 && (
+            <button
+              onClick={prev}
+              className="absolute left-4 z-10 p-3 rounded-full bg-white/10 hover:bg-[#F57C00] text-white transition-all duration-200 hover:scale-110"
+            >
+              <RiArrowLeftLine className="text-xl" />
+            </button>
+          )}
+
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={current}
+              src={images[current]?.image_url}
+              alt={`Photo ${current + 1}`}
+              className="max-h-full max-w-full object-contain rounded-lg select-none"
+              style={{ maxHeight: 'calc(100vh - 220px)' }}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              draggable={false}
+            />
+          </AnimatePresence>
+
+          {images.length > 1 && (
+            <button
+              onClick={next}
+              className="absolute right-4 z-10 p-3 rounded-full bg-white/10 hover:bg-[#F57C00] text-white transition-all duration-200 hover:scale-110"
+            >
+              <RiArrowRightLine className="text-xl" />
+            </button>
+          )}
+        </div>
+
+        {/* Dot indicators */}
+        {images.length > 1 && (
+          <div
+            className="flex justify-center gap-1.5 py-3 flex-shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`rounded-full transition-all duration-200 ${
+                  i === current
+                    ? 'bg-[#F57C00] w-5 h-2'
+                    : 'bg-white/30 hover:bg-white/60 w-2 h-2'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Thumbnail strip */}
+        <div
+          className="flex gap-2 px-5 pb-5 overflow-x-auto flex-shrink-0 justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {images.map((img, i) => (
+            <button
+              key={img.uid}
+              onClick={() => setCurrent(i)}
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-150 ${
+                i === current
+                  ? 'border-[#F57C00] scale-105'
+                  : 'border-white/20 hover:border-white/50 opacity-60 hover:opacity-100'
+              }`}
+            >
+              <img src={img.image_url} alt={`Thumb ${i + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </AnimatePresence>,
+    document.body
+  );
+};
+
+// ── Cooperative Benefits Banner ───────────────────────────────────────────────
 const CooperativeBenefits = () => (
   <AnimateOnScroll variant={fadeUp} delay={0.1} duration={0.6}>
     <div className="bg-[#FDF6EC] rounded-2xl p-6 mb-8 border border-[#F57C00]/20">
@@ -64,342 +197,376 @@ const CooperativeBenefits = () => (
   </AnimateOnScroll>
 );
 
+// ── Apartment Card ────────────────────────────────────────────────────────────
 const ApartmentCard = ({ apartment, purchaseVal, purchasefunc }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [showInstallment, setShowInstallment] = useState(false);
-   const [copiedId, setCopiedId] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
   const [message, setmessage] = useState('');
   const [title, setTitle] = useState('');
   const [open, setopen] = useState(false);
   const [error, seterror] = useState('');
-   const { user} = useAuth();
-   const navigate = useNavigate();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxStart, setLightboxStart] = useState(0);
+
+  const { user } = useAuth();
   
+  const navigate = useNavigate();
+
+  const images = Array.isArray(apartment.images) ? apartment.images : [];
+
+  const openLightbox = (index = 0, e) => {
+    e?.stopPropagation();
+    if (!images.length) return;
+    setLightboxStart(index);
+    setLightboxOpen(true);
+  };
+ 
+
+  const purchaseFunction = (type) => {
+    const availableUser = user?.user && !(user?.user?.is_admin);
+    const apartmentId = apartment.id;
   
+    
+    if(type === 'installment'){
+         if(user && user?.active_loan || user && user?.active_installment
+){
+      setopen(true);
+      setmessage('You are not eligible for housing installment. Please pay up your loan');
+      setTitle('Purchase error');
+      seterror('error')
+      return
+    }
+    return
+    
+    }
+    const fullDetail = {
+      apartmentId,
+      rememberBuy: 'rememberBuy',
+      purchaseType: type === 'full' ? 'OUTRIGHT' : 'INSTALLMENT'
+    };
+     
+    sessionStorage.setItem('identityBuyKey', JSON.stringify(fullDetail));
   
-const purchaseFunction = () =>{
-   const availableUser = user?.user && !(user?.user?.is_admin);
-  
-   console.log(availableUser);
-  purchasefunc(prev => {
-    apartment.allows_installment = showInstallment ? true : false; 
-    const updated = [...prev, apartment];
-
-    const value = new Set(updated);
-
-    console.log(value);
-    localStorage.setItem('purchaseVal', JSON.stringify([...value]));
-    return updated
-  });
- if(availableUser){
-  setopen(true);
-setmessage('Redirecting to dashboard for payment completion');
-setTitle(`Payment of ${apartment.title}`);
-seterror('success');
-
-setTimeout(() => {
-    navigate('/dashboard#buy');
-}, 3000);
- }
- else{
-   setopen(true);
-setmessage('You must login to complete the payment.Go to buy apartment in the dashboard. Redirecting to login page');
-setTitle(`Payment of ${apartment.title}`);
-seterror('error');
-
-setTimeout(() => {
-    navigate('/login', {state: 'rememberBuy'});
-}, 4500);
- }
-
-  
-}
-
+    if (availableUser) {
+      setopen(true);
+      setmessage('Redirecting to dashboard for payment completion');
+      setTitle(`Payment of ${apartment.title}`);
+      seterror('success');
+      setTimeout(() => {
+        navigate('/user#marketplace', {
+          state: {
+            apartmentId,
+            rememberBuy: 'rememberBuy',
+            purchaseType: type === 'full' ? 'OUTRIGHT' : 'INSTALLMENT'
+          }
+        });
+      }, 3000);
+    } else {
+      setopen(true);
+      setmessage('Redirecting to login page');
+      setTitle(`Payment of ${apartment.title}`);
+      seterror('error');
+      setTimeout(() => {
+        navigate('/login', {
+          state: {
+            apartmentId,
+            rememberBuy: 'rememberBuy'
+          }
+        });
+      }, 4500);
+    }
+  };
 
   const totalPrice = Number(apartment.price);
   const monthlyInstallment = apartment.installment_duration_months
     ? (totalPrice / apartment.installment_duration_months).toFixed(2)
     : null;
 
-
   return (
-    <motion.div
-      className="bg-white rounded-2xl shadow-lg overflow-hidden group"
-      whileHover={{ y: -6, boxShadow: "0 24px 48px -8px rgba(0,0,0,0.18)" }}
-      transition={{ duration: 0.35, ease: EASE }}
-    >
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-[#e8f5e9] flex items-center justify-center">
-        <RiHome5Line className="text-[#2E7D32] text-6xl opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-
-        {/* Like / Furnished badges */}
-        <motion.button
-          onClick={() => setIsLiked(!isLiked)}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full"
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
+    <>
+      {/* ↓ ONLY CHANGE: added "flex flex-col h-full" here */}
+      <motion.div
+        className="bg-white rounded-2xl shadow-lg overflow-hidden group flex flex-col h-full"
+        whileHover={{ y: -6, boxShadow: "0 24px 48px -8px rgba(0,0,0,0.18)" }}
+        transition={{ duration: 0.35, ease: EASE }}
+      >
+        {/* ── Image ── */}
+        <div
+          className="relative h-48 overflow-hidden bg-[#e8f5e9] flex items-center justify-center cursor-pointer"
+          onClick={(e) => openLightbox(0, e)}
         >
-          <motion.span
-            key={isLiked ? "liked" : "unliked"}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.25, ease: EASE }}
-          >
-            {isLiked ? (
-              <RiHeartFill className="text-[#F57C00] text-xl" />
-            ) : (
-              <RiHeartLine className="text-gray-400 text-xl" />
-            )}
-          </motion.span>
-        </motion.button>
+          {images.length > 0 ? (
+            <img
+              src={images[0].image_url}
+              alt={apartment.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <RiHome5Line className="text-[#2E7D32] text-6xl opacity-30" />
+          )}
 
-        {/* Furnished badge */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          <div
-            className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-1 ${
-              apartment.is_furnished
-                ? 'bg-[#F57C00] text-white'
-                : 'bg-white/80 text-gray-500'
-            }`}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+
+          {images.length > 1 && (
+            <div className="absolute bottom-10 right-3">
+              <div className="flex items-center gap-1 px-2 py-1 bg-black/60 text-white text-xs rounded-full backdrop-blur-sm">
+                <RiImageLine className="text-xs" />
+                <span>{images.length} photos</span>
+              </div>
+            </div>
+          )}
+
+          {images.length > 0 && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 text-white text-xs px-3 py-1.5 rounded-full">
+                View photos
+              </span>
+            </div>
+          )}
+
+          <motion.button
+            onClick={(e) => { e.stopPropagation(); setIsLiked(!isLiked); }}
+            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full"
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <RiSofaLine />
-            <span>{apartment.is_furnished ? 'Furnished' : 'Unfurnished'}</span>
+            <motion.span
+              key={isLiked ? "liked" : "unliked"}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.25, ease: EASE }}
+            >
+              {isLiked
+                ? <RiHeartFill className="text-[#F57C00] text-xl" />
+                : <RiHeartLine className="text-gray-400 text-xl" />}
+            </motion.span>
+          </motion.button>
+
+          <div className="absolute top-3 left-3 flex flex-col gap-1">
+            <div className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-1 ${
+              apartment.is_furnished ? 'bg-[#F57C00] text-white' : 'bg-white/80 text-gray-500'
+            }`}>
+              <RiSofaLine />
+              <span>{apartment.is_furnished ? 'Furnished' : 'Unfurnished'}</span>
+            </div>
+            {apartment.allows_installment && (
+              <div className="px-2 py-1 bg-[#003000] text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                <RiGroupLine className="text-xs" />
+                <span>Installment</span>
+              </div>
+            )}
+          </div>
+
+        
+        </div>
+
+        {/* Thumbnail strip */}
+        {images.length > 1 && (
+          <div className="flex gap-1.5 px-3 pt-2">
+            {images.slice(1, 5).map((img, i) => (
+              <button
+                key={img.uid}
+                onClick={(e) => openLightbox(i + 1, e)}
+                className="flex-1 h-12 rounded-md overflow-hidden border border-gray-100 hover:border-[#F57C00] transition-colors relative"
+              >
+                <img src={img.image_url} alt={`Photo ${i + 2}`} className="w-full h-full object-cover" />
+                {i === 3 && images.length > 5 && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">+{images.length - 5}</span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Content — ↓ ONLY CHANGE: added "flex flex-col flex-1" here */}
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="text-lg font-bold text-[#003000] mb-1 capitalize">{apartment.title}</h3>
+          <p className="text-xs text-[#F57C00] uppercase tracking-wider mb-3 font-semibold">
+            {apartment.property_type}
+          </p>
+
+          <div className="flex items-start gap-2 mb-4">
+            <RiMapPinLine className="text-[#F57C00] text-lg flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-[#2E7D32]">
+              {apartment.address}, {apartment.city}, {apartment.state}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#FDF6EC] flex-wrap">
+            <span className="text-xs font-medium text-[#003000]">{apartment.bedrooms ?? '—'} Beds</span>
+            <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
+            <span className="text-xs font-medium text-[#003000]">{apartment.bathrooms ?? '—'} Baths</span>
+            <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
+            <span className="text-xs font-medium text-[#003000]">{apartment.toilets ?? '—'} Toilets</span>
+            <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
+            <span className="text-xs font-medium text-[#003000]">
+              {Number(apartment.area_sqm).toFixed(0)} sqm
+            </span>
+          </div>
+
+          {/* ↓ ONLY CHANGE: added "flex-1" here so description stretches and pushes CTA to bottom */}
+          <div className="flex-1 pb-4 text-sm text-gray-400 leading-relaxed border-l-2 border-[#F57C00] pl-3 mb-4 break-words">
+            {apartment.description}
           </div>
 
           {apartment.allows_installment && (
-            <div className="px-2 py-1 bg-[#003000] text-white text-xs font-semibold rounded-full flex items-center gap-1">
-              <RiGroupLine className="text-xs" />
-              <span>Installment</span>
+            <div className="flex gap-2 mb-4">
+              <motion.button
+                onClick={() => setShowInstallment(false)}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  !showInstallment ? 'bg-[#003000] text-white' : 'bg-[#FDF6EC] text-[#003000]'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Full Payment
+              </motion.button>
+              <motion.button
+                onClick={() => setShowInstallment(true)}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  showInstallment ? 'bg-[#F57C00] text-white' : 'bg-[#FDF6EC] text-[#003000]'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Installment
+              </motion.button>
             </div>
           )}
-        </div>
 
-        {/* Status */}
-        <div className="absolute bottom-3 left-3">
-          <span
-            className={`px-2 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
-              apartment.status === 'available'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
-          >
-            {apartment.status}
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-       <div className='font-bold flex items-center justify-between pb-3'>
-  Id:
-  <span className='text-[9px] text-gray-400 flex items-center gap-3 translate-y-1'>
-    {apartment.id}
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(String(apartment.id));
-        setCopiedId(true);
-        setTimeout(() => setCopiedId(false), 2000);
-      }}
-      className={`flex items-center gap-1 px-2 py-0.5 rounded transition-colors text-[9px] font-medium
-        ${copiedId ? 'text-green-600' : 'text-gray-400 hover:text-gray-600'}`}
-      title="Copy ID"
-    >
-      {copiedId ? '✓ Copied' : <Copy size={10} />}
-    </button>
-  </span>
-</div>
-        <h3 className="text-lg font-bold text-[#003000] mb-1 capitalize">{apartment.title}</h3>
-        <p className="text-xs text-[#F57C00] uppercase tracking-wider mb-3 font-semibold">
-          {apartment.property_type}
-        </p>
-
-        <div className="flex items-start gap-2 mb-4">
-          <RiMapPinLine className="text-[#F57C00] text-lg flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#2E7D32]">
-            {apartment.address}, {apartment.city}, {apartment.state}
-          </p>
-        </div>
-
-        {/* Specs */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#FDF6EC] flex-wrap">
-          <span className="text-xs font-medium text-[#003000]">{apartment.bedrooms} Beds</span>
-          <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
-          <span className="text-xs font-medium text-[#003000]">{apartment.bathrooms} Baths</span>
-          <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
-          <span className="text-xs font-medium text-[#003000]">{apartment.toilets} Toilets</span>
-          <div className="w-1 h-1 rounded-full bg-[#2E7D32]" />
-          <span className="text-xs font-medium text-[#003000]">
-            {Number(apartment.area_sqm).toFixed(0)} sqm
-          </span>
-        </div>
-
-        {/* Description */}
-        <div className="pb-4 text-sm text-gray-400 leading-relaxed border-l-2 border-[#F57C00] pl-3 mb-4 break-words">
-          {apartment.description}
-        </div>
-
-        {/* Payment Toggle — only show if installment allowed */}
-        {apartment.allows_installment && (
-          <div className="flex gap-2 mb-4">
-            <motion.button
-              onClick={() => setShowInstallment(false)}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                !showInstallment
-                  ? 'bg-[#003000] text-white'
-                  : 'bg-[#FDF6EC] text-[#003000]'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Full Payment
-            </motion.button>
-            <motion.button
-              onClick={() => setShowInstallment(true)}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                showInstallment
-                  ? 'bg-[#F57C00] text-white'
-                  : 'bg-[#FDF6EC] text-[#003000]'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Installment
-            </motion.button>
-          </div>
-        )}
-
-        {/* Price Details */}
-        <div className="space-y-3 mb-5">
-          {(!apartment.allows_installment || !showInstallment) ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                  <RiBankLine className="text-[#F57C00] text-sm" />
-                </div>
-                <span className="text-sm text-[#2E7D32]">Total Price</span>
-              </div>
-              <div className="flex items-center text-base font-bold text-[#003000]">
-                <TbCurrencyNaira />
-                {Number(apartment.price).toLocaleString()}
-                <span className="text-xs text-[#2E7D32] ml-1 font-normal">one-time</span>
-              </div>
-            </div>
-          ) : (
-            <>
+          <div className="space-y-3 mb-5">
+            {(!apartment.allows_installment || !showInstallment) ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                    <RiHome5Line className="text-[#F57C00] text-sm" />
+                    <RiBankLine className="text-[#F57C00] text-sm" />
                   </div>
-                  <span className="text-sm text-[#2E7D32]">Property Price</span>
+                  <span className="text-sm text-[#2E7D32]">Total Price</span>
                 </div>
-                <div className="flex items-center text-sm font-bold text-[#003000]">
+                <div className="flex items-center text-base font-bold text-[#003000]">
                   <TbCurrencyNaira />
                   {Number(apartment.price).toLocaleString()}
+                  <span className="text-xs text-[#2E7D32] ml-1 font-normal">one-time</span>
                 </div>
               </div>
-
-              {apartment.minimum_initial_deposit && (
+            ) : (
+              <>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="p-2 bg-[#FDF6EC] rounded-lg">
-                      <RiWallet3Line className="text-[#F57C00] text-sm" />
+                      <RiHome5Line className="text-[#F57C00] text-sm" />
                     </div>
-                    <span className="text-sm text-[#2E7D32]">Initial Deposit</span>
+                    <span className="text-sm text-[#2E7D32]">Property Price</span>
                   </div>
                   <div className="flex items-center text-sm font-bold text-[#003000]">
-                    <TbCurrencyNaira />
-                    {Number(apartment.minimum_initial_deposit).toLocaleString()}
+                    <TbCurrencyNaira />{Number(apartment.price).toLocaleString()}
                   </div>
                 </div>
-              )}
 
-              <div className="flex items-center justify-between pt-2 border-t border-[#FDF6EC]">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-[#F57C00] rounded-lg">
-                    <RiGroupLine className="text-white text-sm" />
+                {apartment.minimum_initial_deposit && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-[#FDF6EC] rounded-lg">
+                        <RiWallet3Line className="text-[#F57C00] text-sm" />
+                      </div>
+                      <span className="text-sm text-[#2E7D32]">Initial Deposit</span>
+                    </div>
+                    <div className="flex items-center text-sm font-bold text-[#003000]">
+                      <TbCurrencyNaira />{Number(apartment.minimum_initial_deposit).toLocaleString()}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-sm font-semibold text-[#003000]">Monthly</span>
-                    <p className="text-xs text-[#2E7D32]">
-                      over {apartment.installment_duration_months} months
-                    </p>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-[#FDF6EC]">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-[#F57C00] rounded-lg">
+                      <RiGroupLine className="text-white text-sm" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-[#003000]">Monthly</span>
+                      <p className="text-xs text-[#2E7D32]">over {apartment.installment_duration_months} months</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center text-base font-bold text-[#F57C00]">
+                      <TbCurrencyNaira />{Number(monthlyInstallment).toLocaleString()}
+                    </div>
+                    <span className="text-xs text-[#2E7D32]">0% interest</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center text-base font-bold text-[#F57C00]">
-                    <TbCurrencyNaira />
-                    {Number(monthlyInstallment).toLocaleString()}
-                  </div>
-                  <span className="text-xs text-[#2E7D32]">0% interest</span>
-                </div>
-              </div>
-            </>
+              </>
+            )}
+          </div>
+
+          <motion.button
+            onClick={() => purchaseFunction(apartment.allows_installment && showInstallment ? 'installment' : 'full')}
+            className={`w-full py-3 font-semibold rounded-xl shadow-lg text-white ${
+              apartment.allows_installment && showInstallment
+                ? 'bg-[#F57C00] hover:bg-[#F57C00]/90'
+                : 'bg-[#003000] hover:bg-[#003000]/90'
+            }`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: EASE }}
+          >
+            {apartment.allows_installment && showInstallment
+              ? 'Join Cooperative & Pay Installment'
+              : 'Purchase Property'}
+          </motion.button>
+
+          {apartment.allows_installment && showInstallment && (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mt-2 text-xs text-[#2E7D32]"
+            >
+              New to cooperative?{' '}
+              <button className="text-[#F57C00] font-semibold hover:underline">Join here</button>
+            </motion.p>
           )}
         </div>
 
-        {/* CTA Button */}
-        <motion.button
-        onClick={()=>purchaseFunction()}
-          className={`w-full py-3 font-semibold rounded-xl shadow-lg text-white ${
-            apartment.allows_installment && showInstallment
-              ? 'bg-[#F57C00] hover:bg-[#F57C00]/90'
-              : 'bg-[#003000] hover:bg-[#003000]/90'
-          }`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ duration: 0.2, ease: EASE } }
-        >
-          {apartment.allows_installment && showInstallment
-            ? 'Join Cooperative & Pay Installment'
-            : 'Purchase Property'}
-        </motion.button>
-
-        {apartment.allows_installment && showInstallment && (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mt-2 text-xs text-[#2E7D32]"
-          >
-            New to cooperative?{' '}
-            <button className="text-[#F57C00] font-semibold hover:underline">Join here</button>
-          </motion.p>
+        {createPortal(
+          <PopupMessage isOpen={open} title={title} message={message} type={error} onClose={() => setopen(false)} />,
+          document.body
         )}
-      </div>
-      {createPortal(<PopupMessage isOpen = {open} title={title} message={message} type={error} onClose={()=>setopen(false)} />, document.body)}
-    </motion.div>
+      </motion.div>
+
+      {lightboxOpen && images.length > 0 && (
+        <ImageLightbox
+          images={images}
+          startIndex={lightboxStart}
+          title={apartment.title}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 const BuyApartment = () => {
   const { sales, viewDetails } = useSale();
   const navigate = useNavigate();
   const [saleDetails, setSaleDetails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bg, setBg] = useState(false);
-  const [purchaseValue, setPurchaseValue] = useState([]);
-  
-  
+  const [purchaseValue, setPurchaseValue] = useState('');
 
-  
-
-  useEffect(() => {
-    setBg(true);
-  }, []);
+  useEffect(() => { setBg(true); }, []);
 
   useEffect(() => {
     if (sales.length === 0) return;
 
     const saleIds = sales
-      .filter((val) => val.listing_type === 'sale' && val.property_type === 'house')
+      .filter((val) => val.listing_type === 'sale' && val.property_type === 'house' && val.status === 'available')
       .map((val) => val.id)
-      .slice(0, 5); // take first 5 only
+    
 
-    if (saleIds.length === 0) {
-      setLoading(false);
-      return;
-    }
+    if (saleIds.length === 0) { setLoading(false); return; }
 
     const getFullDetails = async () => {
       setLoading(true);
@@ -442,37 +609,24 @@ const BuyApartment = () => {
         <p className="text-center text-[#2E7D32] py-10">No properties available for sale.</p>
       ) : (
         <StaggerWrapper
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-5 items-stretch"
           stagger={0.13}
           delay={0.15}
           amount={0.05}
         >
           {saleDetails.map((apartment) => (
-            <StaggerItem key={apartment.id} variant={fadeUp} duration={0.55}>
-              <ApartmentCard apartment={apartment} purchasefunc = {setPurchaseValue} purchaseVal = {purchaseValue} />
+            <StaggerItem key={apartment.id} variant={fadeUp} duration={0.55} className="h-full">
+              <ApartmentCard
+                apartment={apartment}
+                purchasefunc={setPurchaseValue}
+                purchaseVal={purchaseValue}
+              />
             </StaggerItem>
           ))}
         </StaggerWrapper>
       )}
 
-      {/* Only show "View More" if there are more than 5 sale listings */}
-      {totalSales > 5 && (
-        <AnimateOnScroll variant={fadeUp} delay={0.1} duration={0.6}>
-          <div className="flex justify-center pt-4">
-            <motion.button
-              className="px-8 py-3 bg-white text-[#003000] font-semibold rounded-xl border-2 border-[#F57C00] hover:bg-[#F57C00] hover:text-white transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.25, ease: EASE }}
-            >
-              View More Properties
-            </motion.button>
-          </div>
-        </AnimateOnScroll>
-      )}
-
       <Footer />
-    
     </div>
   );
 };

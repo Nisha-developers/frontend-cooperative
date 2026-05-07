@@ -9,7 +9,7 @@ const PasswordReset = () => {
   const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
   const resetToken = localStorage.getItem('resetToken');
-  console.log(resetToken);
+
   const handleVerify = async () => {
     if (!password || !confirmPassword) {
       setMessage('Please enter both password fields');
@@ -48,6 +48,7 @@ const PasswordReset = () => {
       const data = await response.json();
 
       if (response.ok) {
+        console.log(resetToken)
         setMessage('✓ Password reset successful!');
         setIsValid(true);
         localStorage.removeItem('resetToken');

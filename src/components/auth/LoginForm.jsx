@@ -95,12 +95,6 @@ export default function Login() {
       <div className="w-full max-w-md relative z-10 animate-fadeInUp">
         {/* Header with enhanced animation */}
         <div className="mb-10 text-center transform transition-all duration-500 hover:scale-105">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cooperative-dark to-cooperative-teal mb-6 shadow-xl animate-float">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="10" r="5" fill="#F57C00" />
-              <path d="M4 24c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#FDF6EC" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-          </div>
           <h1
             className="text-4xl font-bold bg-gradient-to-r from-cooperative-dark to-cooperative-teal bg-clip-text text-transparent tracking-tight"
             style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: "-0.02em" }}
@@ -108,7 +102,7 @@ export default function Login() {
             Welcome back
           </h1>
           <p className="mt-3 text-sm text-cooperative-dark/60 font-medium">
-            Sign in to your cooperative account
+           Manage your company Website
           </p>
         </div>
 
@@ -214,23 +208,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Remember me with enhanced checkbox */}
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-5 h-5 rounded-md border-2 border-gray-300 peer-checked:bg-cooperative-teal peer-checked:border-cooperative-teal transition-all duration-300 group-hover:border-cooperative-teal/50" />
-                <svg
-                  className="absolute inset-0 w-5 h-5 text-white opacity-0 peer-checked:opacity-100 transition-all duration-300 p-0.5 transform peer-checked:scale-100 scale-0"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <span className="text-sm text-cooperative-dark/70 font-medium group-hover:text-cooperative-dark transition-all duration-300">
-                Keep me signed in
-              </span>
-            </label>
-
+        
             {/* Submit button with loading state */}
             <button
               type="submit"

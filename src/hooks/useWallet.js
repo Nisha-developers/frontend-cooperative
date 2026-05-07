@@ -9,7 +9,10 @@ const useWalletStore = create((set, get) => ({
   title: '',
   error: '',
   returnMessage: '',
-  transactionHistory: [],
+  transactionHistory: {},
+  pendingHistory:{},
+  confirmHistory:{},
+  rejectHistory:{},
   showMessage: (payload) => {
 set({
   message: payload.message,
@@ -65,11 +68,11 @@ set({
       set({ loading: false });
     }
   },
- getTransactionsHistory: async (token) => {
+ getTransactionsHistory: async (token, status='') => {
     set({ loading: true });
-
+// ?status=PENDING THIS IS WHAT YOU WILL USE FOR FILTER
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/wallet/transactions/history/`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/wallet/transactions/${status}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -77,15 +80,13 @@ set({
      
 
       const data = await res.json();
+      console.log(data);
        if(!res.ok){
        set({returnMessage: 'notOkay'})
         throw new Error('An error has occurred, check and try again' )
       }
       console.log(data)
-      set({
-       transactionHistory: data,
-        loading: false,
-      });
+      return data;
     } catch (error) {
        set({returnMessage: 'catchError'})
       console.log(error);
@@ -94,7 +95,7 @@ set({
   },
 
   // FUND wallet
-  fundWallet: async (payload, token) => {
+  fundWallet: async (payload, token, refreshAccessToken) => {
     set({ loading: true });
 
     try {
@@ -113,9 +114,12 @@ set({
       const data = await res.json();
      console.log(data);
      if(!res.ok){
+       if(res.status === 401){
+        refreshAccessToken();
+      }
        get().showMessage(
           {
-            message: 'There is an error while making the transactions. Please Check and try again',
+            message: data[Object.keys(data)],
             title: 'Transaction Error',
             error: 'Error',
             open: true
@@ -123,6 +127,7 @@ set({
         )
         return
      }
+
  get().showMessage(
           {
             message: 'Your transaction is pending wait for approval for payment completion',
@@ -132,6 +137,7 @@ set({
           }
         )
       set({ loading: false });
+      return data.uid;
     } catch (error) {
        get().showMessage(
           {
@@ -145,7 +151,7 @@ set({
       set({ loading: false });
     }
   },
-  withdraw: async(payload, token) => {
+  withdraw: async(payload, token, refreshAccessToken) => {
      set({ loading: true });
 
     try {
@@ -165,11 +171,12 @@ set({
       console.log(data);
       console.log(res)
       if(!res.ok){
+      refreshAccessToken()
         get().showMessage(
           {
-            message: 'There is an error while making the transactions. Please Check and try again',
+            message: data[Object.keys(data)],
             title: 'Debit Transaction Error',
-            error: 'Error',
+            error: 'error',
             open: true
           }
         )

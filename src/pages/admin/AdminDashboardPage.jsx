@@ -10,6 +10,8 @@ import HousingSale from '../../components/admin/HousingSale.jsx';
 import SalesRequest from '../../components/admin/SalesRequest.jsx';
 import ManageMember from '../../components/admin/ManageMember.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import RentRequest from '../../components/admin/RentRequest.jsx';
+
 
 
 const DashboardLayout = () => {
@@ -43,7 +45,8 @@ const pages = {
   managecredit: CreditandThrift,
   manageagricultural: Agricultural,
   transaction : Transaction,
-  managemember: ManageMember
+  managemember: ManageMember,
+  rentRequest: RentRequest
  };
 
 const PageComponent = pages[activePage] || Admindashboardmain;

@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react';
 import DashboaHeader from './DashboadHeader.jsx';
 import DashboardAside from './DashboardAside.jsx';
 import Dashboardmain from './Dashboardmain.jsx';
-import AgricCooperative from '../../pages/user/AgricCooperative.jsx';
 import BuyApartment from '../../pages/user/BuyApartment.jsx';
-import RentApartment from '../../pages/user/RentApartment.jsx';
-
-import CreditAndThrift from '../../pages/user/CreditAndThrift.jsx';
+import CreditAndThrift from '../../pages/user/Loan.jsx';
 import PaymentInfo from '../../pages/user/PaymentInfo.jsx';
 import Setting from '../../pages/user/Setting.jsx';
 import Transaction from '../../pages/user/Transaction.jsx';
-import HousingCooperative from '../../pages/user/HousingCooperative.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import PopupMessage from '../ui/PopupMessage.jsx';
+import LoanHistory from '../../pages/user/LoanHistory.jsx';
+import HousingHistory from '../../pages/user/HousingHistory.jsx';
+import HousingLoan from '../../pages/user/HousingLoan.jsx';
+import RentApartment from '../../pages/user/RentApartment.jsx';
+import RentHistory from '../../pages/user/rentHistory.jsx';
+
 
 
 
@@ -39,17 +41,20 @@ useEffect(() => {
     window.removeEventListener("hashchange", handleHashChange);
   };
 }, []);
-console.log(activePage);
+
 const pages = {
   dashboard: Dashboardmain,
-  rent:RentApartment,
-  buy: BuyApartment,
-  housing: HousingCooperative,
-  agricultural: AgricCooperative,
+  marketplace: BuyApartment,
+  loanhistory: LoanHistory, 
   credit: CreditAndThrift,
   transaction: Transaction,
+  rent: RentApartment,
+  rentHistory: RentHistory, 
   settings: Setting,
-  payment: PaymentInfo
+  payment: PaymentInfo,
+  loan:HousingLoan,
+  history: HousingHistory
+
 };
 
 const PageComponent = pages[activePage]  || Dashboardmain;

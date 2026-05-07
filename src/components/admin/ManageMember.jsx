@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { createPortal } from 'react-dom';
+import PopupMessage from '../ui/PopupMessage';
+import { GrNext, GrPrevious } from "react-icons/gr";
+import { CiSearch } from "react-icons/ci";
 
-// ── Detail Modal ──────────────────────────────────────────────────────────────
+// ── Detail Modal ───────────────────────────────────────────────────────────
 const UserDetailModal = ({ userId, token, onClose }) => {
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,438 +14,397 @@ const UserDetailModal = ({ userId, token, onClose }) => {
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        setLoading(true); setError(null);
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/api/users/get-users/${userId}/`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error(`Failed with status ${res.status}`);
-        const data = await res.json();
-        setDetail(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        setDetail(await res.json());
+      } catch (err) { setError(err.message); }
+      finally { setLoading(false); }
     };
     fetchDetail();
   }, [userId]);
-  console.log(detail);
-  console.log('hi')
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleString('en-GB', {
-      year: 'numeric', month: 'short', day: '2-digit',
-      hour: '2-digit', minute: '2-digit',
-    });
-  };
+  const fmt = (d) => !d ? '—' : new Date(d).toLocaleString('en-GB', { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 
-  return (
-    // Backdrop
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 "
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-      onClick={onClose}
-    >
-      {/* Panel */}
+  const fields = detail ? [
+    { label: 'Email',                value: detail.user.email },
+    { label: 'Membership ID',        value: detail.user.membership_id },
+    { label: 'Balance',              value: `₦${Number(detail.wallet.balance).toLocaleString()}`, green: true },
+    { label: 'Status',               value: detail.user.is_active !== false ? 'Active' : 'Inactive' },
+    { label: 'Account Name',         value: detail.profile.account_name ?? 'Nil' },
+    { label: 'Account Number',       value: detail.profile.account_number ?? 'Nil' },
+    { label: 'Bank Name',            value: detail.profile.bank_name ?? 'Nil' },
+    { label: 'Phone',                value: detail.profile.phone_number ?? 'Nil' },
+    { label: 'Address',              value: detail.profile.address ?? 'Nil' },
+    { label: 'Loan Eligibility',     value: detail.loan_eligibility.is_eligible ? 'Eligible' : 'Not Eligible' },
+    { label: 'Wallet Created',       value: fmt(detail.wallet.created_on) },
+    { label: 'Wallet Updated',       value: fmt(detail.wallet.updated_on) },
+    ...(detail.active_loan ? [
+      { label: 'Disbursed At',           value: fmt(detail.active_loan.disbursed_at) },
+      { label: 'Installments Remaining', value: `${detail.active_loan.installments_remaining}` },
+      { label: 'Monthly Installment',    value: detail.active_loan.monthly_installment },
+      { label: 'Principal',              value: detail.active_loan.principal },
+      { label: 'Tenure',                 value: `${detail.active_loan.tenure_months} months` },
+      { label: 'Due Date',               value: detail.active_loan.this_month_due_date },
+      { label: 'Installment #',          value: detail.active_loan.this_month_installment_number },
+      { label: 'Total Outstanding',      value: detail.active_loan.total_outstanding },
+      { label: 'Total Repayable',        value: detail.active_loan.total_repayable },
+    ] : []),
+  ] : [];
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex  items-center justify-center p-0 sm:p-4 bg-cooperative-dark/60 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative w-full max-w-lg rounded-2xl shadow-2xl p-8 max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: '#FFFFFF' }}
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-[90%] sm:max-w-lg bg-cooperative-cream rounded-t-2xl sm:rounded-2xl max-h-[92vh] flex flex-col shadow-2xl "
+        onClick={e => e.stopPropagation()}
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
-        >
-          ✕
-        </button>
-
-        <h2 className="text-xl font-bold mb-6" style={{ color: '#003000' }}>
-          Member Details
-        </h2>
-
-        {loading && (
-          <div className="flex flex-col items-center py-10">
-            <div
-              className="w-8 h-8 border-4 rounded-full animate-spin"
-              style={{ borderColor: '#003000', borderTopColor: 'transparent' }}
-            />
-            <p className="mt-3 text-sm" style={{ color: '#003000' }}>Fetching details…</p>
+        {/* Header */}
+        <div className="bg-cooperative-dark px-5 py-4 rounded-t-2xl sm:rounded-t-2xl flex items-center justify-between flex-shrink-0">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-cooperative-teal font-bold">Member Profile</p>
+            {detail && !loading && (
+              <p className="text-cooperative-cream font-bold text-base mt-0.5">{detail.user.full_name || '—'}</p>
+            )}
           </div>
-        )}
+          <button onClick={onClose} className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-cooperative-cream transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
 
-        {error && (
-          <div className="text-center py-8">
-            <p className="font-semibold" style={{ color: '#E65100' }}>Could not load details</p>
-            <p className="text-sm mt-1" style={{ color: '#BF360C' }}>{error}</p>
-          </div>
-        )}
-
-        {detail && !loading && (
-          <div className="space-y-4">
-            {/* Avatar row */}
-            <div className="flex items-center gap-4 mb-6">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-                style={{ backgroundColor: detail.user.is_admin ? '#2E7D32' : '#F57C00' }}
-              >
-                {detail.user.full_name?.charAt(0)?.toUpperCase() ?? '?'}
-              </div>
-              <div>
-                <p className="text-lg font-bold" style={{ color: '#003000' }}>{detail.user.full_name || '—'}</p>
-                <p className="text-sm opacity-60" style={{ color: '#003000' }}>@{detail.user.username || '—'}</p>
-              </div>
-              <span
-                className="ml-auto px-3 py-1 text-xs rounded-full font-semibold"
-                style={{ backgroundColor: detail.user.is_admin ? '#2E7D32' : '#F57C00', color: '#fff' }}
-              >
-                {detail.user.is_admin ? 'Admin' : 'Member'}
-              </span>
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 px-5 py-4">
+          {loading && (
+            <div className="flex flex-col items-center py-12 gap-3">
+              <div className="w-8 h-8 rounded-full border-4 border-cooperative-teal/20 border-t-cooperative-teal animate-spin"/>
+              <p className="text-cooperative-dark/50 text-sm">Fetching details…</p>
             </div>
-
-            {/* Fields grid */}
-            {[
-              { label: 'Email',          value: detail.user.email },
-              { label: 'Membership ID',  value: detail.user.membership_id },
-              { label: 'Balance',        value: `₦${Number(detail.wallet.balance).toLocaleString() ?? '0.00'}` },
-              { label: 'Status',         value: detail.user.is_active !== false ? 'Active' : 'Inactive' },
-              { label: 'Account Name',        value: `${detail.profile.account_name ?? 'Nill'}` },
-              { label: 'Account Number',        value: `${detail.profile.account_number ?? 'Nill'}` },
-               { label: 'Bank Name',        value: `${detail.profile.bank_name ?? 'Nill'}` },
-              { label: 'Phone Number',        value: `${detail.profile.phone_number ?? 'Nill'}` },
-              { label: 'Location',        value: `${detail.profile.address ?? 'Nill'}` },
-              { label: 'Loan Eligibility',        value: `${detail.loan_eligibility.is_eligible ? 'Eligible': 'Not Eligible'}` },
-              { label: 'Created On',     value: formatDate(detail.wallet.created_on) },
-              { label: 'Last Updated',   value: formatDate(detail.wallet.updated_on) },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="flex justify-between items-center py-2 border-b"
-                style={{ borderColor: '#F0F0F0' }}
-              >
-                <span className="text-sm font-semibold opacity-60" style={{ color: '#003000' }}>
-                  {label}
-                </span>
-                <span
-                  className="text-sm font-medium text-right max-w-xs break-all"
-                  style={{
-                    color: label === 'Balance'
-                      ? '#2E7D32'
-                      : label === 'Status'
-                        ? (detail.is_active !== false ? '#2E7D32' : '#9E9E9E')
-                        : '#003000',
-                    fontFamily: label === 'UID' || label === 'Membership ID' ? 'monospace' : 'inherit',
-                  }}
-                >
-                  {value || '—'}
+          )}
+          {error && (
+            <div className="text-center py-10">
+              <p className="font-semibold text-red-600">Could not load details</p>
+              <p className="text-sm mt-1 text-red-400">{error}</p>
+            </div>
+          )}
+          {detail && !loading && (
+            <div className="space-y-3">
+              {/* Avatar + role */}
+              <div className="flex items-center gap-3 mb-4 p-3 bg-white rounded-xl border border-cooperative-dark/8">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 ${detail.user.is_admin ? 'bg-cooperative-teal' : 'bg-cooperative-orange'}`}>
+                  {detail.user.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-cooperative-dark truncate">{detail.user.full_name || '—'}</p>
+                  <p className="text-xs text-cooperative-dark/50">@{detail.user.username || '—'}</p>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${detail.user.is_admin ? 'bg-cooperative-teal/10 text-cooperative-teal' : 'bg-cooperative-orange/10 text-cooperative-orange'}`}>
+                  {detail.user.is_admin ? 'Admin' : 'Member'}
                 </span>
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Active loan section label */}
+              {detail.active_loan && (
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cooperative-orange pt-2 pb-1 border-t border-cooperative-dark/8">Active Loan</p>
+              )}
+
+              {/* Fields */}
+              {fields.map(({ label, value, green }) => (
+                <div key={label} className="flex justify-between items-center py-2 border-b border-cooperative-dark/8 last:border-0">
+                  <span className="text-xs text-cooperative-dark/50 font-semibold">{label}</span>
+                  <span className={`text-xs font-semibold text-right max-w-[55%] break-all ${green ? 'text-cooperative-teal' : 'text-cooperative-dark'}`}>{value || '—'}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
-
+// ── Main ───────────────────────────────────────────────────────────────────
 const ManageMember = () => {
   const { getAccessToken } = useAuth();
   const token = getAccessToken();
 
-  const [users, setUsers]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [users, setUsers]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState(null); // controls modal
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [title, setTitle]           = useState('');
+  const [message, setmessage]       = useState('');
+  const [type, settype]             = useState('');
+  const [open, setOpen]             = useState(false);
+  const [nextPage, setNextPage]     = useState('');
+  const [prevPage, setPrevPage]     = useState('');
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchValue, setSearchValue] = useState({});
 
-// Replace your getUsers function with this:
-const getUsers = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/users/get-users`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
-    const data = await response.json();
-    const list = Array.isArray(data) ? data : (data.results ?? []);
-
-    // Fetch detail for every user in parallel
-    const detailedUsers = await Promise.all(
-      list.map(async (u) => {
-        try {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/users/get-users/${u.id}/`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (!res.ok) return u; // fall back to base user if detail fails
-          const detail = await res.json();
-          return {
-            ...u,
-            wallet_created_on: detail.wallet?.created_on ?? null,
-            balance: detail.wallet?.balance
-          };
-        } catch {
-          return u; // fall back gracefully
-        }
-      })
-    );
-
-    setUsers(detailedUsers);
-  } catch (err) {
-    console.error(err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  useEffect(() => { getUsers(); 
-  }, []);
-  console.log(users);
-
-
-  const filteredUsers = users.filter((u) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      u.full_name?.toLowerCase().includes(term) ||
-      u.email?.toLowerCase().includes(term) ||
-      u.username?.toLowerCase().includes(term) ||
-      u.membership_id?.toLowerCase().includes(term)
-    );
-  });
-
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      year: 'numeric', month: 'short', day: '2-digit',
-    });
+  const getUsers = async (more = '') => {
+    try {
+      setLoading(true); setError(null);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/get-users${more}`,
+        { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) throw new Error(`Status ${response.status}`);
+      const data = await response.json();
+      setNextPage(data.next);
+      setPrevPage(data.previous);
+      setTotalCount(data.count ?? 0);
+      const list = Array.isArray(data) ? data : (data.results ?? []);
+      const detailedUsers = await Promise.all(
+        list.map(async (u) => {
+          try {
+            const res = await fetch(
+              `${import.meta.env.VITE_API_URL}/api/users/get-users/${u.id}/`,
+              { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
+            );
+            if (!res.ok) return u;
+            const detail = await res.json();
+            return { ...u, wallet_created_on: detail.wallet?.created_on ?? null, balance: detail.wallet?.balance };
+          } catch { return u; }
+        })
+      );
+      setUsers(detailedUsers);
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   };
+
+  const queryMore = () => {
+    if (!nextPage) { setOpen(true); settype('error'); setmessage('You are on the last page'); setTitle('End of list'); return; }
+    getUsers(nextPage.slice(41));
+  };
+  const queryPrev = () => {
+    if (!prevPage) { setOpen(true); settype('error'); setmessage('You are on the first page'); setTitle('Start of list'); return; }
+    getUsers(prevPage.slice(41));
+  };
+
+  useEffect(() => { getUsers(); }, []);
+
+  
+  const fmtDate = (d) => !d ? '—' : new Date(d).toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'2-digit' });
 
   const handleExport = () => {
-    const headers = ['Full Name', 'Email', 'Username', 'Membership ID', 'UID', 'Role', 'Status', 'Balance', 'Created On', 'Updated On'];
-    const rows = users.map((u) => [
-      u.full_name      ?? '',
-      u.email          ?? '',
-      u.username       ?? '',
-      u.membership_id  ?? '',
-      u.uid            ?? '',
-      u.is_admin ? 'Admin' : 'Member',
-      u.is_active !== false ? 'Active' : 'Inactive',
-      Number(u.balance).toLocaleString() ?? '0.00',
-      formatDate(u.created_on),
-      formatDate(u.updated_on),
-    ]);
-    const csv  = [headers, ...rows].map((r) => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = 'members.csv';
-    a.click();
+    const headers = ['Full Name','Email','Username','Membership ID','Role','Status','Balance','Joined'];
+    const rows = users.map((u) => [u.full_name??'', u.email??'', u.username??'', u.membership_id??'', u.is_admin?'Admin':'Member', u.is_active!==false?'Active':'Inactive', Number(u.balance).toLocaleString()??'0.00', fmtDate(u.wallet_created_on)]);
+    const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='members.csv'; a.click();
     URL.revokeObjectURL(url);
   };
+const handleSearch = async() =>{
+ console.log(searchTerm);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/get-users/by-email/?email=${searchTerm}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+     
 
+      const data = await res.json();
+       if(!res.ok){
+      throw new Error('Seems an error has occured')
+      }
+     setSearchValue(data);
+   
+      return data
+    
+    } catch (error) {
+       console.log('Error')
+    }
+}
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDF6EC' }}>
+    <div className="min-h-screen bg-cooperative-cream">
+      {selectedUserId && <UserDetailModal userId={selectedUserId} token={token} onClose={() => setSelectedUserId(null)} />}
+        {searchValue?.user?.email && <UserDetailModal userId={searchValue?.user?.id} token={token} onClose={() => setSearchValue(null)} />}
 
-      {/* Detail Modal */}
-      {selectedUserId && (
-        <UserDetailModal
-          userId={selectedUserId}
-          token={token}
-          onClose={() => setSelectedUserId(null)}
-        />
-      )}
+      <div className="max-w-7xl mx-auto px-4 py-6">
 
-      <div className="container mx-auto px-4 py-8">
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#003000' }}>
-            Manage Members
-          </h1>
-          <p style={{ color: '#003000' }} className="opacity-80">
-            View and manage all cooperative members
-          </p>
-        </div>
-        {/* Search */}
-        <div className="rounded-lg shadow-lg mb-8 p-6" style={{ backgroundColor: '#FFFFFF' }}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: '#003000' }}>Search</label>
-              <input
-                type="text"
-                placeholder="Search by name, email, username or membership ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2"
-                style={{ borderColor: '#E0E0E0', backgroundColor: '#FDF6EC', color: '#003000' }}
-              />
-            </div>
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-cooperative-teal font-bold mb-1">Administration</p>
+            <h1 className="text-2xl font-bold text-cooperative-dark">Manage Members</h1>
+            <p className="text-sm text-cooperative-dark/50 mt-0.5">{totalCount > 0 ? `${totalCount} total members` : 'View and manage cooperative members'}</p>
           </div>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-cooperative-teal text-white text-sm font-semibold rounded-lg hover:bg-cooperative-teal/90 transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export CSV
+          </button>
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div className="text-center py-16">
-            <div
-              className="inline-block w-8 h-8 border-4 rounded-full animate-spin"
-              style={{ borderColor: '#003000', borderTopColor: 'transparent' }}
+        {/* ── Search ── */}
+        <div className="mb-5">
+          
+            <div className='grid grid-cols-4 gap-x-6 max-small-screen:grid-cols-1'>
+            <input
+              type="text"
+              placeholder="Search email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 py-2.5 text-sm bg-white border border-cooperative-dark/12 rounded-lg text-cooperative-dark placeholder:text-cooperative-dark/35 focus:outline-none focus:border-cooperative-orange transition col-span-3 "
             />
-            <p className="mt-4" style={{ color: '#003000' }}>Loading members…</p>
+            <button className='bg-cooperative-dark text-white rounded-md flex items-center justify-center gap-6 w-[70%] max-sm:w-[100%] max-small-screen:h-[35px] mt-2' onClick={handleSearch} >Search</button>
+          </div>
+        </div>
+
+        {/* ── Loading ── */}
+        {loading && (
+          <div className="flex flex-col items-center py-20 gap-3">
+            <div className="w-8 h-8 rounded-full border-4 border-cooperative-teal/20 border-t-cooperative-teal animate-spin"/>
+            <p className="text-cooperative-dark/50 text-sm">Loading members…</p>
           </div>
         )}
 
-        {/* Error */}
+        {/* ── Error ── */}
         {!loading && error && (
-          <div className="rounded-lg p-6 text-center mb-8"
-            style={{ backgroundColor: '#FFF3E0', border: '1px solid #F57C00' }}>
-            <p className="font-semibold" style={{ color: '#E65100' }}>Failed to load members</p>
-            <p className="text-sm mt-1"  style={{ color: '#BF360C' }}>{error}</p>
-            <button
-              onClick={getUsers}
-              className="mt-4 px-4 py-2 rounded font-semibold text-sm"
-              style={{ backgroundColor: '#F57C00', color: '#FFFFFF' }}
-            >
-              Retry
-            </button>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
+            <p className="font-semibold text-red-600 text-sm">Failed to load members</p>
+            <p className="text-xs text-red-400 mt-1">{error}</p>
+            <button onClick={getUsers} className="mt-3 px-4 py-1.5 bg-cooperative-orange text-white text-sm font-semibold rounded-lg">Retry</button>
           </div>
         )}
 
-        {/* Table */}
+        {/* ── Table ── */}
         {!loading && !error && (
-          <>
-            <div className="rounded-lg shadow-lg overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead style={{ backgroundColor: '#003000' }}>
-                    <tr>
-                      {['Full Name','Email','Username','Membership ID','Balance','Role','Status','Joined','Actions'].map((h) => (
-                        <th
-                          key={h}
-                          className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                          style={{ color: '#FDF6EC' }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y" style={{ borderColor: '#E0E0E0' }}>
-                    {filteredUsers.map((u) => (
-                      <tr key={u.id} className="hover:opacity-90 transition-opacity" style={{ backgroundColor: '#FFFFFF' }}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                              style={{ backgroundColor: u.is_admin ? '#2E7D32' : '#F57C00' }}
-                            >
-                              {u.full_name?.charAt(0)?.toUpperCase() ?? '?'}
-                            </div>
-                            <div className="text-sm font-medium" style={{ color: '#003000' }}>{u.full_name || '—'}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm" style={{ color: '#003000' }}>{u.email || '—'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm" style={{ color: '#003000' }}>@{u.username || '—'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-mono" style={{ color: '#003000' }}>{u.membership_id || '—'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold" style={{ color: '#2E7D32' }}>
-                            ₦{Number(u.balance).toLocaleString() ?? '0.00'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className="px-2 py-1 text-xs rounded-full font-semibold"
-                            style={{ backgroundColor: u.is_admin ? '#2E7D32' : '#F57C00', color: '#FFFFFF' }}
-                          >
-                            {u.is_admin ? 'Admin' : 'Member'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className="px-2 py-1 text-xs rounded-full font-semibold"
-                            style={{ backgroundColor: u.is_active !== false ? '#2E7D32' : '#9E9E9E', color: '#FFFFFF' }}
-                          >
-                            {u.is_active !== false ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm" style={{ color: '#003000' }}>{formatDate(u.wallet_created_on)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            className="px-3 py-1 rounded text-sm font-semibold transition-all hover:scale-105"
-                            style={{ backgroundColor: '#F57C00', color: '#FFFFFF' }}
-                            onClick={() => setSelectedUserId(u.id)}
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
+          <div className="bg-white rounded-xl border border-cooperative-dark/10 overflow-hidden">
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-cooperative-dark">
+                    {['Member','Email','Membership ID','Balance','Role','Status','Joined',''].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-cooperative-cream/70 first:pl-5 last:pr-5 last:text-right">
+                        {h}
+                      </th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cooperative-dark/6">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-cooperative-cream/60 transition-colors">
+                      {/* Member */}
+                      <td className="px-4 py-3 pl-5">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${u.is_admin ? 'bg-cooperative-teal' : 'bg-cooperative-orange'}`}>
+                            {u.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-cooperative-dark text-sm leading-none">{u.full_name || '—'}</p>
+                            <p className="text-[11px] text-cooperative-dark/40 mt-0.5">@{u.username || '—'}</p>
+                          </div>
+                        </div>
+                      </td>
+                      {/* Email */}
+                      <td className="px-4 py-3 text-cooperative-dark/70 text-xs">{u.email || '—'}</td>
+                      {/* Membership */}
+                      <td className="px-4 py-3 font-mono text-cooperative-dark/70 text-xs">{u.membership_id || '—'}</td>
+                      {/* Balance */}
+                      <td className="px-4 py-3 font-bold text-cooperative-teal text-sm">₦{Number(u.balance).toLocaleString()}</td>
+                      {/* Role */}
+                      <td className="px-4 py-3">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${u.is_admin ? 'bg-cooperative-teal/10 text-cooperative-teal' : 'bg-cooperative-orange/10 text-cooperative-orange'}`}>
+                          {u.is_admin ? 'Admin' : 'Member'}
+                        </span>
+                      </td>
+                      {/* Status */}
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${u.is_active !== false ? 'bg-cooperative-teal/10 text-cooperative-teal' : 'bg-cooperative-dark/8 text-cooperative-dark/40'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.is_active !== false ? 'bg-cooperative-teal' : 'bg-cooperative-dark/30'}`}/>
+                          {u.is_active !== false ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      {/* Joined */}
+                      <td className="px-4 py-3 text-cooperative-dark/50 text-xs">{fmtDate(u.wallet_created_on)}</td>
+                      {/* Action */}
+                      <td className="px-4 py-3 pr-5 text-right">
+                        <button
+                          onClick={() => setSelectedUserId(u.id)}
+                          className="px-3 py-1.5 bg-cooperative-dark text-cooperative-cream text-xs font-semibold rounded-lg hover:bg-cooperative-dark/80 transition"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-              {filteredUsers.length === 0 && (
-                <div className="text-center py-12">
-                  <p style={{ color: '#003000' }} className="opacity-70">
-                    No members found matching your search
-                  </p>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-cooperative-dark/8">
+              {users.map((u) => (
+                <div key={u.id} className="p-4 flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 ${u.is_admin ? 'bg-cooperative-teal' : 'bg-cooperative-orange'}`}>
+                    {u.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-cooperative-dark text-sm truncate">{u.full_name || '—'}</p>
+                    <p className="text-xs text-cooperative-dark/45 truncate">{u.email || '—'}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs font-bold text-cooperative-teal">₦{Number(u.balance).toLocaleString()}</span>
+                      <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${u.is_active !== false ? 'bg-cooperative-teal/10 text-cooperative-teal' : 'bg-cooperative-dark/8 text-cooperative-dark/40'}`}>
+                        {u.is_active !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedUserId(u.id)} className="px-3 py-1.5 bg-cooperative-dark text-cooperative-cream text-xs font-semibold rounded-lg flex-shrink-0">
+                    View
+                  </button>
                 </div>
-              )}
+              ))}
             </div>
 
-            {/* Export */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleExport}
-                className="px-6 py-2 rounded-lg font-semibold transition-all hover:scale-105 flex items-center gap-2"
-                style={{ backgroundColor: '#2E7D32', color: '#FFFFFF' }}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Export Members List
-              </button>
+            {/* {filteredUsers.length === 0 && (
+              <div className="text-center py-14">
+                <p className="text-cooperative-dark/40 text-sm">No members match your search</p>
+              </div>
+            )} */}
+            {/* Nothing is showing */}
+
+            {/* ── Pagination footer ── */}
+            <div className="flex items-center justify-between px-5 py-3 border-t border-cooperative-dark/8 bg-cooperative-cream/40">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={queryPrev}
+                  disabled={!prevPage}
+                  className="w-8 h-8 rounded-lg bg-cooperative-dark text-cooperative-cream flex items-center justify-center hover:bg-cooperative-dark/80 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                >
+                  <GrPrevious className="w-3 h-3"/>
+                </button>
+                <button
+                  onClick={queryMore}
+                  disabled={!nextPage}
+                  className="w-8 h-8 rounded-lg bg-cooperative-dark text-cooperative-cream flex items-center justify-center hover:bg-cooperative-dark/80 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                >
+                  <GrNext className="w-3 h-3"/>
+                </button>
+              </div>
+           
             </div>
-          </>
+          </div>
         )}
-
       </div>
+
+      {createPortal(
+        <PopupMessage title={title} message={message} onClose={() => setOpen(false)} isOpen={open} type={type}/>,
+        document.body
+      )}
     </div>
   );
 };
