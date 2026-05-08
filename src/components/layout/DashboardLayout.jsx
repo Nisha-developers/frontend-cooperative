@@ -13,7 +13,7 @@ import LoanHistory from '../../pages/user/LoanHistory.jsx';
 import HousingHistory from '../../pages/user/HousingHistory.jsx';
 import HousingLoan from '../../pages/user/HousingLoan.jsx';
 import RentApartment from '../../pages/user/RentApartment.jsx';
-import RentHistory from '../../pages/user/rentHistory.jsx';
+import RentHistory from '../../pages/user/RentHistory.jsx';
 
 
 

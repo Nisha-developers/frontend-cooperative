@@ -26,6 +26,7 @@ const UserDetailModal = ({ userId, token, onClose }) => {
     };
     fetchDetail();
   }, [userId]);
+  console.log(detail);
 
   const fmt = (d) => !d ? '—' : new Date(d).toLocaleString('en-GB', { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
 
@@ -52,6 +53,21 @@ const UserDetailModal = ({ userId, token, onClose }) => {
       { label: 'Installment #',          value: detail.active_loan.this_month_installment_number },
       { label: 'Total Outstanding',      value: detail.active_loan.total_outstanding },
       { label: 'Total Repayable',        value: detail.active_loan.total_repayable },
+    ] : []),
+     ...(detail.active_installment ? [
+      { label: 'Disbursed At',           value: fmt(detail.active_installment.approved_at) },
+      { label: 'Installments Remaining', value: `${detail.active_installment.installments_remaining}` },
+      { label: 'Monthly Installment',    value: detail.active_installment.monthly_installment },
+      { label: 'Principal',              value: detail.active_installment.initial_deposit },
+      { label: 'Tenure',                 value: `${detail.active_installment.tenure_months} months` },
+      { label: 'Due Date',               value: detail.active_installment.this_month_due_date },
+      { label: 'Installment #',          value: detail.active_installment.this_month_installment_number },
+      { label: 'Total Outstanding',      value: detail.active_installment.total_outstanding },
+      { label: 'Total Repayable',        value: detail.active_installment.total_repayable },
+      { label: 'Property Price',         value: detail.active_installment.property_price },
+      { label: 'Listing Address',        value: detail.active_installment.listing_address },
+      { label: 'Listing Title',          value: detail.active_installment.listing_title },
+      { label: 'This Month Due',         value: detail.active_installment.this_month_due },
     ] : []),
   ] : [];
 
@@ -201,6 +217,7 @@ const ManageMember = () => {
     URL.revokeObjectURL(url);
   };
 const handleSearch = async() =>{
+  
  console.log(searchTerm);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/get-users/by-email/?email=${searchTerm}`, {
@@ -212,6 +229,12 @@ const handleSearch = async() =>{
 
       const data = await res.json();
        if(!res.ok){
+        if(res.status === 404){
+          setmessage('The email does not exist please check and try again');
+          settype('Error');
+          setOpen(true);
+          setTitle('Search Error')
+        }
       throw new Error('Seems an error has occured')
       }
      setSearchValue(data);
