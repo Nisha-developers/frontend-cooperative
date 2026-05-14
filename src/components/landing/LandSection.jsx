@@ -204,7 +204,7 @@ const LandBenefits = () => (
             {item.icon}
             <div>
               <h3 className="font-semibold text-[#003000]">{item.title}</h3>
-              <p className="text-sm text-[#2E7D32]">{item.desc}</p>
+              <p className="text-sm text-[#2E7D32]">{item.desc} </p>
             </div>
           </div>
         ))}
@@ -227,6 +227,7 @@ const LandCard = ({ land }) => {
     const navigate = useNavigate()
   const purchaseApartment = (apartment, type) =>
     {
+
       const apartmentId = apartment.id
  const availableUser = user?.user && !(user?.user?.is_admin);
    if(type === 'installment'){
@@ -238,10 +239,14 @@ const LandCard = ({ land }) => {
       seterror('error')
       return
     }
-    return
-    
+ 
+    purchaseAction(type, apartment.id, availableUser,apartment)
     }
- const fullDetail = {
+    purchaseAction(type, apartment.id, availableUser, apartment);
+ 
+  }
+ function purchaseAction(type, apartmentId, availableUser, apartment){
+const fullDetail = {
     apartmentId,
     rememberBuy:'rememberLand',
     purchaseType: type === 'full' ? 'OUTRIGHT' : 'INSTALLMENT'
@@ -264,7 +269,7 @@ const LandCard = ({ land }) => {
       setopen(true);
       setmessage('Redirecting to login page');
       setTitle(`Payment of ${apartment.title}`);
-      seterror('error');
+      seterror('success');
      setTimeout(() => {
   navigate('/login', {
     state: { 
@@ -287,10 +292,18 @@ const LandCard = ({ land }) => {
   };
 
   const totalPrice = Number(land.price);
+  const remainingPrice = Number(land?.price) - Number(land?.minimum_initial_deposit);
+
+  const months = Number(land.installment_duration_months) || 0;
+
+const years =Number(months / 12) ;
+const annualRate = 0.5; 
+const SI = (remainingPrice * annualRate * years) / 100;
+console.log(SI);
   const monthlyInstallment =
-    land.installment_duration_months && totalPrice
-      ? (totalPrice / land.installment_duration_months).toFixed(2)
-      : null;
+    land.installment_duration_months
+    ? ((remainingPrice + SI)) / months.toFixed(2)
+    : null;
 
   const areaSqm = Number(land.area_sqm);
   const areaHectares = (areaSqm / 10000).toFixed(2);
@@ -535,7 +548,7 @@ const LandCard = ({ land }) => {
                     <div className="flex items-center text-base font-bold text-[#F57C00]">
                       <TbCurrencyNaira />{Number(monthlyInstallment).toLocaleString()}
                     </div>
-                    <span className="text-xs text-[#2E7D32]">0% interest</span>
+                    <span className="text-xs text-[#2E7D32]">0.5% interest</span>
                   </div>
                 </div>
               </>
@@ -608,7 +621,7 @@ const LandSection = () => {
     if (sales.length === 0) return;
 
     const landIds = sales
-      .filter((val) => val.property_type === 'land' && val.status === 'available')
+      .filter((val) => val.property_type === 'land'&& val.status === 'available')
       .map((val) => val.id)
      
 

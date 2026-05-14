@@ -221,13 +221,13 @@ const ApartmentCard = ({ apartment, purchaseVal, purchasefunc }) => {
     setLightboxStart(index);
     setLightboxOpen(true);
   };
- 
+ console.log(apartment);
 
   const purchaseFunction = (type) => {
     const availableUser = user?.user && !(user?.user?.is_admin);
     const apartmentId = apartment.id;
   
-    
+    console.log(type);
     if(type === 'installment'){
          if(user && user?.active_loan || user && user?.active_installment
 ){
@@ -237,10 +237,14 @@ const ApartmentCard = ({ apartment, purchaseVal, purchasefunc }) => {
       seterror('error')
       return
     }
-    return
-    
+    purchaseAction(type);
     }
-    const fullDetail = {
+    purchaseAction(type);
+  };
+  function purchaseAction(type){
+    const availableUser = user?.user && !(user?.user?.is_admin);
+    const apartmentId = apartment.id;
+      const fullDetail = {
       apartmentId,
       rememberBuy: 'rememberBuy',
       purchaseType: type === 'full' ? 'OUTRIGHT' : 'INSTALLMENT'
@@ -276,11 +280,18 @@ const ApartmentCard = ({ apartment, purchaseVal, purchasefunc }) => {
         });
       }, 4500);
     }
-  };
+  }
 
-  const totalPrice = Number(apartment.price);
+  const totalPrice = Number(apartment?.price) - Number(apartment?.minimum_initial_deposit);
+  
+const months = apartment.installment_duration_months || 0;
+const years = months / 12;
+const annualRate = 0.5; 
+
+const SI = (totalPrice * annualRate * years) / 100;
+
   const monthlyInstallment = apartment.installment_duration_months
-    ? (totalPrice / apartment.installment_duration_months).toFixed(2)
+    ? ((totalPrice + SI)/ apartment.installment_duration_months).toFixed(2)
     : null;
 
   return (
@@ -494,7 +505,7 @@ const ApartmentCard = ({ apartment, purchaseVal, purchasefunc }) => {
                     <div className="flex items-center text-base font-bold text-[#F57C00]">
                       <TbCurrencyNaira />{Number(monthlyInstallment).toLocaleString()}
                     </div>
-                    <span className="text-xs text-[#2E7D32]">0% interest</span>
+                    <span className="text-xs text-[#2E7D32]">0.5% interest</span>
                   </div>
                 </div>
               </>

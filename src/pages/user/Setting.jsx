@@ -18,7 +18,7 @@ import PopupMessage from '../../components/ui/PopupMessage';
 
 const Settings = () => {
   const [saved, setSaved] = useState(false);
-  const {user, getAccessToken,refreshAccessToken} = useAuth();
+  const {user, getAccessToken,refreshAccessToken, fetchUser} = useAuth();
   const [editMode, setEditMode] = useState(true)
   const [message, setMessage] = useState('');
   const [title, setTitle] = useState('');
@@ -160,7 +160,7 @@ console.log(data);
     setOpen(true);
   }
   
-
+fetchUser();
 };
    
 

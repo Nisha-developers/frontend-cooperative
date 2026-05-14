@@ -338,7 +338,7 @@ const Transaction = () => {
       const [all, pending, declined, confirmed] = await Promise.all([
         getTransactions(getAccessToken()),
         getTransactions(getAccessToken(), '?status=PENDING'),
-        getTransactions(getAccessToken(), '?status=DECLINED'),
+        getTransactions(getAccessToken(), '?status=REJECTED'),
         getTransactions(getAccessToken(), '?status=CONFIRMED'),
       ]);
       setAllTransaction(all      ?? { count: 0, next: null, results: [] });

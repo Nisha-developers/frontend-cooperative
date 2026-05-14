@@ -36,6 +36,7 @@ import { useSale } from '../../context/SaleContext';
 import { createPortal } from 'react-dom';
 import { usePurchase } from '../../context/PurchaseProvider';
 import PopupMessage from '../../components/ui/PopupMessage';
+import { useAuth } from '../../context/AuthContext';
 
 
 const BuyApartment = () => {
@@ -46,7 +47,11 @@ const BuyApartment = () => {
  const {previewApartment, title, message, open, type, preview, setPreview, applyPurchase, setOpen, getPurchase, } = usePurchase();
  const [isOpen, setIsOpen] = useState(false);
  const[installmentalOpen, setInstallmentalOpen] = useState(false);
-
+ const [typed, setTyped] = useState('');
+ const [messaged, setMessaged] = useState('');
+ const [opened, setOpened] = useState(false);
+ const [titled, settitled] = useState('')
+const {user} = useAuth();
  const headingParagraph = [
    {
      title: 'Buy an Apartment',
@@ -96,6 +101,13 @@ fetchSales();
    const continuePurchase = async() =>{
     
     if(getValue?.purchaseType === "INSTALLMENT" || location?.state?.purchaseType === "INSTALLMENT"){
+    if(user?.active_installment){
+     setOpened(true);
+     settitled('Active loan');
+     setMessaged('You have an active housing loan. Please pay up before proceeding');
+     setTyped('error')
+     return
+    }
    const getplan =  await viewDetails(apartmentId);
       const payload = {
        listing_id: apartmentId,
@@ -120,6 +132,9 @@ fetchSales();
    }
 const confirmPurchase = async ()=>{
    if(getValue?.purchaseType === "INSTALLMENT" || location?.state?.purchaseType === "INSTALLMENT"){
+    if(user?.active_installment){
+
+    }
     const getplan =  await viewDetails(apartmentId);
  const payload = {
        listing_id: apartmentId,
@@ -607,7 +622,7 @@ if(!apartmentId || getValue?.rememberBuy === 'rememberRent'){
 )}
 
 {createPortal(<PopupMessage isOpen={open} title={title} message={message} type={type} onClose={()=>setOpen(false)}/>,document.body)}
-    
+ {createPortal(<PopupMessage isOpen={opened} title={titled} message={messaged} type={typed} onClose={()=>setOpened(false)}/>,document.body)}   
     </div>
   );
 };

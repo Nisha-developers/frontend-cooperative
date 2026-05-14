@@ -338,8 +338,9 @@ const HousingLoan = () => {
         </div>
 
         <button
-          className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap transition-all duration-200 shadow-sm bg-[#2E7D32] hover:bg-[#1B5E20] cursor-pointer text-white max-sm:justify-center"
-          onClick={repayment}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm whitespace-nowrap transition-all duration-200 shadow-sm bg-[#2E7D32] hover:bg-[#1B5E20] cursor-pointer text-white max-sm:justify-center${!user?.active_installment? 'cursor-not-allowed': 'cursor-pointer'} ${!user?.active_installment? 'bg-gray-500/40': ''}`}
+          disabled={!user?.active_installment}
+          onClick={()=>repayment()}
         >
           <Home size={16} />
           Repay Loan

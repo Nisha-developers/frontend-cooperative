@@ -308,7 +308,7 @@ const getRemark = (getval) =>{
   if(filter === 'confirmed')filteredTransactions = confirmed.results;
   if(filter === 'rejected') filteredTransactions = decline.results;
 
-
+console.log(filteredTransactions);
 
   return (
     <div className='relative min-h-screen'>

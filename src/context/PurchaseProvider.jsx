@@ -316,7 +316,7 @@ const repayLoan = async(id) =>{
       if(!res.ok){
         console.log(data)
         setTitle('Repay Error');
-        setMessage(data[Object.keys(data)])
+        setMessage(data.message)
         setOpen(true);
         setType('error');
         return

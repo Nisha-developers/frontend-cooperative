@@ -68,7 +68,7 @@ const Dashboardmain = ({componentUserValue}) => {
   const [isOpen, setOpen] = useState(false)
   const dateJoined = new Date(walletValue.created_on);
   const day = dateJoined.getDate();
-  const {getAccessToken} = useAuth();
+  const {getAccessToken,fetchUser} = useAuth();
   const [form, setForm] = useState({});
   const [profile, setProfile] = useState({});
   const [openWithdrwal, setOpenWithdrawal] = useState(false);
@@ -212,7 +212,9 @@ const handleSubmit = async (data) => {
     }
 
     setProfileData(result);
-    setOpen(false)
+    fetchUser();
+    setOpen(false);
+
   } catch (err) {
     console.error(" NETWORK ERROR:", err);
   }

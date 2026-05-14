@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+ 
+ 
 @layer base {
   html { @apply scroll-smooth; }
   body { @apply bg-cooperative-cream text-cooperative-dark font-sans antialiased; }

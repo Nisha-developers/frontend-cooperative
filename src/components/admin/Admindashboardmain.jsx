@@ -188,11 +188,12 @@ return data;
     }
   }
   const ActionBasedonType = (activity, action, value) => {
+    console.log(value);
   const messages = {
     rent: `Are you sure you want to ${action} the rent request for ${value?.listing_title} from ${value?.user_email}?`,
     loan: `Are you sure you want to ${action} the loan request of ₦${Number(value?.principal).toLocaleString()} from ${value?.user_email}?`,
     transaction: `Are you sure you want to ${action} the transaction of  ₦${Number(value?.amount).toLocaleString()} from ${value?.full_name}?`,
-    default: `Are you sure you want to ${action} the purchase of ${value?.listing} at ${value?.location} from ${value?.user}?`,
+    default: `Are you sure you want to ${action} the purchase of ${value?.listing_title} at ${value?.listing_address} from ${value?.user_email}?`,
   };
 
   return messages[activity] || messages.default;
@@ -205,6 +206,10 @@ return data;
   console.log(rentLength);
   const loanPendingRequest = statData?.loans?.results?.slice(0, 3)?? [];
   const housePendingRequest = statData?.house?.slice(0, 3)?? [];
+  console.log(statData?.house);
+  console.log(statData);
+  console.log(housePendingRequest)
+
 
 
 
@@ -284,18 +289,16 @@ setStatsData((prev) => {
   }
   else if (modalAction === 'accept' && activity === 'house') {
     Approve(selectedTransaction.uid, 'approve', {}, 'purchase/admin');
+
     setStatsData((prev) => {
-      const updatedResults = prev.house.results.filter(
+      
+      const updatedResults = prev?.house?.filter(
         (item) => item.uid !== selectedTransaction.uid
       );
 
       return {
         ...prev,
-        house: {
-          ...prev.house,
-          results: updatedResults,
-          count: prev.house.count - 1,
-        },
+        house: updatedResults
       };
     });
 
