@@ -8,6 +8,9 @@
   html { @apply scroll-smooth; }
   body { @apply bg-cooperative-cream text-cooperative-dark font-sans antialiased; }
 }
+body{
+  display: none;
+}
 @layer components {
   /* Primary button — orange accent */
   .btn-primary {
